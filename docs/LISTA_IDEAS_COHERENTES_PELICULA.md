@@ -165,6 +165,8 @@ Referencia creativa para el proyecto local (`~/jarvis-startup`). **No** es copia
 
 No hay un archivo por idea: el conjunto **1–100** queda cubierto por `bienvenido_jarvis.py` + `jarvis_lista.py` + `hud_overlay.py`, variables en [`ENV.md`](ENV.md), anexos de saludo con `JARVIS_LISTA_COMPLETA`, hooks (`run_hooks` → `~/.config/jarvis-startup/hooks.d/`), informe de sesión, CI (`.github/workflows/jarvis.yml`), tests (`tests/`), `install.sh`, [`scripts/jarvis_confirm.py`](../scripts/jarvis_confirm.py), y ejemplos en `contrib/`. Las ideas marcadas `H` o dependientes de hardware ajeno siguen siendo aspiracionales.
 
+**Detalle ítem a ítem (Hecho / Parcial / No):** ver [`COBERTURA_IDEAS.md`](COBERTURA_IDEAS.md).
+
 ---
 
 ## Cómo usar esta lista

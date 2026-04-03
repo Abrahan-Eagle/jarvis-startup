@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 import sys
 
-__version__ = "2.0.1"
+__version__ = "2.1.0"
 
 if __name__ == "__main__" and "--version" in sys.argv:
     print(f"jarvis-bienvenida {__version__}")
@@ -25,6 +25,7 @@ if __name__ == "__main__" and "--version" in sys.argv:
 import argparse
 import asyncio
 import datetime
+import locale as _locale_mod
 import os
 import shutil
 import subprocess
@@ -32,9 +33,19 @@ import tempfile
 import time
 
 import edge_tts
-import pygame
 import psutil
 import requests
+
+
+def _truthy_env(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in ("1", "true", "yes", "on")
+
+
+TEXT_ONLY = _truthy_env("JARVIS_TEXT_ONLY")
+if not TEXT_ONLY:
+    import pygame
+else:
+    pygame = None  # type: ignore[assignment]
 
 try:
     import jarvis_lista
@@ -158,7 +169,6 @@ DIAG_GIT = os.getenv("JARVIS_DIAG_GIT", "").strip().lower() in ("1", "true", "ye
 LISTA_COMPLETA = os.getenv("JARVIS_LISTA_COMPLETA", "").strip().lower() in ("1", "true", "yes", "on")
 FOCUS_MODE = os.getenv("JARVIS_FOCUS", "").strip().lower() in ("1", "true", "yes", "on")
 EXPO_MODE = os.getenv("JARVIS_EXPO", "").strip().lower() in ("1", "true", "yes", "on")
-TEXT_ONLY = os.getenv("JARVIS_TEXT_ONLY", "").strip().lower() in ("1", "true", "yes", "on")
 SKIP_AMBIENT_AUDIO = FOCUS_MODE or EXPO_MODE or TEXT_ONLY
 
 
@@ -322,6 +332,8 @@ def _escribir_last_run(ok: bool, dry_run: bool, extra: dict | None = None) -> No
 
 
 def _ensure_mixer() -> None:
+    if pygame is None:
+        return
     if not pygame.mixer.get_init():
         pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=4096)
     pygame.mixer.set_num_channels(32)
@@ -329,6 +341,8 @@ def _ensure_mixer() -> None:
 
 def reproducir_chime_opcional() -> None:
     """Un sonido corto al inicio (opcional); no usa mixer.music."""
+    if pygame is None:
+        return
     if not BOOT_SOUND_RAW:
         return
     path = os.path.expanduser(BOOT_SOUND_RAW)
@@ -353,6 +367,8 @@ def reproducir_chime_opcional() -> None:
 
 def reproducir_chime_ide_opcional() -> None:
     """Chime opcional tras abrir Cursor (fase ‘taller’). Canales 3–4 para no solapar boot."""
+    if pygame is None:
+        return
     if SKIP_AMBIENT_AUDIO:
         return
     if not IDE_CHIME_RAW:
@@ -395,7 +411,28 @@ def obtener_clima() -> str:
     return ""
 
 
+def _maybe_play_scan_sound(dry_run: bool) -> None:
+    """Idea 20: sonido muy breve al leer métricas (opcional)."""
+    if dry_run or pygame is None or SKIP_AMBIENT_AUDIO:
+        return
+    raw = os.getenv("JARVIS_SCAN_SOUND", "").strip()
+    if not raw:
+        return
+    path = os.path.expanduser(raw)
+    if not os.path.isfile(path):
+        return
+    try:
+        _ensure_mixer()
+        snd = pygame.mixer.Sound(path)
+        snd.set_volume(0.12)
+        ch = pygame.mixer.Channel(5)
+        ch.play(snd)
+    except Exception:
+        pass
+
+
 def obtener_saludo_dinamico(dry_run: bool = False) -> tuple[str, str]:
+    _maybe_play_scan_sound(dry_run)
     ahora = datetime.datetime.now()
     hora = ahora.hour
     hora_actual = ahora.strftime("%H:%M")
@@ -479,8 +516,63 @@ def obtener_saludo_dinamico(dry_run: bool = False) -> tuple[str, str]:
     return _finalizar_saludo(linea1, linea2)
 
 
+def _print_banner_optional() -> None:
+    bf = os.getenv("JARVIS_BANNER_FILE", "").strip()
+    if bf:
+        p = os.path.expanduser(bf)
+        if os.path.isfile(p):
+            try:
+                with open(p, encoding="utf-8", errors="replace") as fh:
+                    print(fh.read().rstrip() + "\n")
+            except OSError:
+                pass
+            return
+    btxt = os.getenv("JARVIS_ANSI_BANNER", "").strip()
+    if btxt:
+        print(btxt + "\n")
+
+
+def _maybe_open_readme(dry_run: bool) -> None:
+    if dry_run or not _truthy_env("JARVIS_OPEN_README"):
+        return
+    base = os.path.dirname(os.path.abspath(__file__))
+    readme = os.path.join(base, "README.md")
+    if not os.path.isfile(readme):
+        return
+    xdg = shutil.which("xdg-open")
+    if not xdg:
+        return
+    try:
+        subprocess.Popen([xdg, readme], start_new_session=True)
+        print("  📄  Abriendo README del proyecto.")
+    except OSError:
+        pass
+
+
+def _reproducir_chime_env(var_name: str, dry_run: bool) -> None:
+    if dry_run or pygame is None or SKIP_AMBIENT_AUDIO:
+        return
+    raw = os.getenv(var_name, "").strip()
+    if not raw:
+        return
+    path = os.path.expanduser(raw)
+    if not os.path.isfile(path):
+        return
+    try:
+        _ensure_mixer()
+        snd = pygame.mixer.Sound(path)
+        snd.set_volume(0.45)
+        pygame.mixer.Channel(6).play(snd)
+    except pygame.error:
+        pass
+
+
 def secuencia_bienvenida(dry_run: bool = False) -> None:
     print("\n🚀  Iniciando secuencia de bienvenida…\n")
+    op = os.getenv("JARVIS_OPENING_PHRASE", "").strip()
+    if op:
+        print(f"  {op}\n")
+    _print_banner_optional()
     if dry_run:
         print("  [dry-run] Sin chime, TTS, música ni lanzar aplicaciones.\n")
 
@@ -499,17 +591,24 @@ def secuencia_bienvenida(dry_run: bool = False) -> None:
     abrir_apps_lado_a_lado(dry_run=dry_run)
 
     print("\n✅  Secuencia completada.\n")
+    closing = os.getenv("JARVIS_CLOSING_PHRASE", "").strip()
+    if closing:
+        print(f"  {closing}")
+        if _truthy_env("JARVIS_CLOSING_TTS") and not dry_run:
+            hablar(closing, dry_run=False)
     if not dry_run:
         try:
-            if MUSIC_FADEOUT_MS > 0 and pygame.mixer.music.get_busy():
+            if pygame is not None and MUSIC_FADEOUT_MS > 0 and pygame.mixer.music.get_busy():
                 pygame.mixer.music.fadeout(MUSIC_FADEOUT_MS)
                 fin = time.time() + (MUSIC_FADEOUT_MS / 1000.0) + 0.6
                 while pygame.mixer.music.get_busy() and time.time() < fin:
                     pygame.time.Clock().tick(30)
-            else:
+            elif pygame is not None:
                 pygame.mixer.music.stop()
         except pygame.error:
             pass
+    _reproducir_chime_env("JARVIS_CHIME_SUCCESS", dry_run)
+    _maybe_open_readme(dry_run)
     notificar_escritorio(dry_run=dry_run)
     hud_ok = _launch_hud_overlay(dry_run=dry_run)
     extra_run: dict = {
@@ -554,6 +653,12 @@ def hablar(texto: str, dry_run: bool = False) -> None:
     if dry_run:
         print("  [dry-run] TTS omitido.")
         return
+    if TEXT_ONLY:
+        if _hablar_espeak(texto):
+            print("  🔊  Modo texto: espeak (sin pygame).")
+        else:
+            print("  ⚠️  Modo texto: instale espeak-ng para voz local o desactive JARVIS_TEXT_ONLY.")
+        return
     fd, tts_path = tempfile.mkstemp(suffix=".mp3", prefix="jarvis_tts_")
     os.close(fd)
     try:
@@ -579,8 +684,9 @@ def hablar(texto: str, dry_run: bool = False) -> None:
             print("  🔊  Respaldo: espeak (sin red).")
     finally:
         try:
-            vol = MUSIC_VOLUME * (jarvis_lista.mark_music_volume_factor() if jarvis_lista else 1.0)
-            pygame.mixer.music.set_volume(min(1.0, vol))
+            if pygame is not None:
+                vol = MUSIC_VOLUME * (jarvis_lista.mark_music_volume_factor() if jarvis_lista else 1.0)
+                pygame.mixer.music.set_volume(min(1.0, vol))
         except pygame.error:
             pass
         try:
@@ -590,6 +696,8 @@ def hablar(texto: str, dry_run: bool = False) -> None:
 
 
 def preparar_y_reproducir_musica(dry_run: bool = False) -> None:
+    if pygame is None:
+        return
     if dry_run:
         if os.path.exists(MUSIC_FILE):
             print(f"  [dry-run] Se reproduciría música: {MUSIC_FILE}")
@@ -787,6 +895,16 @@ def mostrar_config(dry_run: bool = False) -> None:
     print(f"  SKIP_NETWORK = {SKIP_NETWORK}")
     print(f"  NO_NOTIFY = {NO_NOTIFY}")
     print(f"  last_run log = {LAST_RUN_PATH} (skip={SKIP_LAST_RUN_LOG})")
+    try:
+        print(f"  locale = {_locale_mod.getlocale()}")
+        lang = os.getenv("LANG", "")
+        if lang and "es" not in lang.lower() and JARVIS_TTS_VOICE.startswith("es-"):
+            print(
+                "  ℹ️  LANG sugiere no-español: puede ajustar JARVIS_TTS_VOICE "
+                "(p. ej. en-US-GuyNeural). Ver docs/ENV.md."
+            )
+    except (OSError, AttributeError):
+        pass
 
 
 def main(dry_run: bool = False) -> None:

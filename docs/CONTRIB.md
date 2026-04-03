@@ -8,3 +8,6 @@
 - **CI:** [`.github/workflows/jarvis.yml`](../.github/workflows/jarvis.yml).
 
 Confirmación antes de comandos destructivos (idea 14): [`scripts/jarvis_confirm.py`](../scripts/jarvis_confirm.py).
+
+- Normalización de audio offline (idea 21): [`README-normalize-audio.md`](../contrib/README-normalize-audio.md).
+- Reglas de ventana / compositor (ideas 61, 63): [`jarvis-window-hints.stub.sh`](../contrib/jarvis-window-hints.stub.sh) (plantilla; no automatiza el escritorio).

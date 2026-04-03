@@ -45,5 +45,21 @@ Referencia única para `bienvenido_jarvis.py`, `jarvis_lista.py` y [`hud_overlay
 | `JARVIS_MARK_LEVEL` | `1`–`7`: factor de volumen del MP3 (vía `jarvis_lista.mark_music_volume_factor`). |
 | `JARVIS_AUTOSTART_JITTER` | `1`: retraso aleatorio 0–2 s al inicio (menos picos si muchos autostarts). |
 | `OLLAMA_HOST` / `JARVIS_OLLAMA_MODEL` | Opcional: si están definidos, `jarvis_lista` puede añadir una línea al anexo de saludo vía API local de Ollama. |
+| `JARVIS_OPENING_PHRASE` | Texto impreso al inicio de la secuencia (antes del banner). |
+| `JARVIS_CLOSING_PHRASE` | Texto tras «Secuencia completada»; con `JARVIS_CLOSING_TTS=1` también se habla con TTS. |
+| `JARVIS_BANNER_FILE` | Ruta a archivo de texto/ASCII mostrado en consola al inicio. |
+| `JARVIS_ANSI_BANNER` | Banner en línea (alternativa a archivo). |
+| `JARVIS_ISOLATED_NOTICE` | `1`: añade aviso de modo aislado al anexo (solo texto). |
+| `JARVIS_OPEN_README` | `1`: abre `README.md` del repo con `xdg-open` al final (no en dry-run). |
+| `JARVIS_SCAN_SOUND` | Ruta a `.wav`/`.ogg` muy breve al calcular el saludo (volumen bajo). |
+| `JARVIS_CHIME_SUCCESS` | Chime opcional tras completar la secuencia (antes de notify). |
+| `JARVIS_TASKS_FILE` | JSON o Markdown con tareas; primera línea o ítem en anexo. |
+| `JARVIS_ICS_FILE` | Ruta a `.ics` local; menciona evento próximo o aviso 15 min. |
+| `JARVIS_GIT_STATUS_ANNEX` | `1`: incluye `git status -sb` en el anexo. |
+| `JARVIS_TEST_CMD` | Comando shell para prueba (`bash -c`); solo se reporta código de salida. |
+| `JARVIS_TEST_CMD_TIMEOUT` | Segundos máx. para `JARVIS_TEST_CMD` (default `60`). |
+| `JARVIS_SKIP_UPDATES_CHECK` | `1`: no intenta detectar actualizaciones del sistema en el anexo. |
+| `JARVIS_MISSIONS_FILE` | Primera línea no vacía se muestra en el HUD (idea 29). |
+| `JARVIS_HUD_CPU_BAR` | `0`: oculta la barra de color por CPU en el HUD (default activo). |
 
 Extensiones en `jarvis_lista.py` y documentos en `docs/` pueden añadir variables; esta tabla cubre el flujo principal.

@@ -432,6 +432,155 @@ def _security_reminder() -> str:
     return ""
 
 
+def _sn_isolated_notice() -> str:
+    """Idea 46: aviso texto, sin tocar firewall."""
+    if os.getenv("JARVIS_ISOLATED_NOTICE", "").strip().lower() not in ("1", "true", "yes", "on"):
+        return ""
+    return (
+        "Modo aislado: Jarvis no configura el cortafuegos; "
+        "revise manualmente el tráfico saliente si opera en red restringida."
+    )
+
+
+def _sn_updates_pending() -> str:
+    """Idea 42: resumen ligero de actualizaciones pendientes (timeout corto)."""
+    if os.getenv("JARVIS_SKIP_UPDATES_CHECK", "").strip().lower() in ("1", "true", "yes", "on"):
+        return ""
+    if shutil.which("apt-get"):
+        r = _run(
+            ["bash", "-c", "apt-get -s upgrade 2>/dev/null | grep -c '^Inst ' || true"],
+            12,
+        )
+        if r.returncode == 0 and (r.stdout or "").strip().isdigit():
+            n = int((r.stdout or "").strip())
+            if n > 0:
+                return f"Paquetes con actualización simulada disponible: {n}."
+    if shutil.which("dnf"):
+        r = _run(["dnf", "check-update", "--quiet"], 15)
+        if r.returncode == 100:
+            lines = [x for x in (r.stdout or "").splitlines() if x.strip()]
+            return f"Actualizaciones DNF pendientes: aproximadamente {len(lines)} entradas."
+    if shutil.which("checkupdates"):
+        r = _run(["checkupdates"], 20)
+        if r.returncode == 0 and (r.stdout or "").strip():
+            n = len([x for x in (r.stdout or "").splitlines() if x.strip()])
+            return f"Actualizaciones pacman pendientes: {n}."
+    return ""
+
+
+def _sn_net_iface_active() -> str:
+    """Idea 34: interfaces activas (sin contadores delta, evita CPU)."""
+    try:
+        import psutil
+
+        stats = psutil.net_if_stats()
+        up = [k for k, v in stats.items() if v.isup and not k.startswith("lo")]
+        if up:
+            return f"Interfaces en servicio: {', '.join(sorted(up)[:6])}."
+    except Exception:
+        pass
+    return ""
+
+
+def _sn_git_status_short(root: str) -> str:
+    """Idea 53: primera línea de git status -sb."""
+    if os.getenv("JARVIS_GIT_STATUS_ANNEX", "").strip().lower() not in ("1", "true", "yes", "on"):
+        return ""
+    if not (Path(root) / ".git").exists():
+        return ""
+    r = _run(["git", "-C", root, "status", "-sb"], 3)
+    if r.returncode != 0:
+        return ""
+    line = (r.stdout or "").splitlines()[0].strip() if (r.stdout or "").strip() else ""
+    if line:
+        return f"Estado git: {line[:160]}."
+    return ""
+
+
+def _sn_test_cmd_exit() -> str:
+    """Idea 57: comando de prueba configurable; solo código de salida."""
+    cmd = os.getenv("JARVIS_TEST_CMD", "").strip()
+    if not cmd:
+        return ""
+    try:
+        to = float(os.getenv("JARVIS_TEST_CMD_TIMEOUT", "60"))
+    except ValueError:
+        to = 60.0
+    to = max(5.0, min(120.0, to))
+    r = _run(["bash", "-c", cmd], to)
+    return f"Prueba configurada del taller: código de salida {r.returncode}."
+
+
+def _sn_tasks_file() -> str:
+    """Ideas 6–7: tareas desde JSON o Markdown."""
+    tf = os.getenv("JARVIS_TASKS_FILE", "").strip()
+    if not tf:
+        return ""
+    p = Path(os.path.expanduser(tf))
+    if not p.is_file():
+        return ""
+    try:
+        raw = p.read_text(encoding="utf-8", errors="replace")
+        if p.suffix.lower() == ".json":
+            data = json.loads(raw)
+            if isinstance(data, list) and data:
+                first = data[0]
+                if isinstance(first, dict) and first.get("title"):
+                    return f"Tarea prioritaria: {str(first['title'])[:120]}."
+                return f"Tareas cargadas: {len(data)} entrada(s)."
+            if isinstance(data, dict) and "tasks" in data:
+                t = data["tasks"]
+                if isinstance(t, list) and t:
+                    return f"Plan del día: {str(t[0])[:120]}."
+        for ln in raw.splitlines():
+            s = ln.strip()
+            if s.startswith(("- ", "* ", "1.")):
+                return f"Pendiente: {s.lstrip('-*0123456789. ')[:160]}"
+    except (OSError, json.JSONDecodeError):
+        pass
+    return ""
+
+
+def _sn_ics_reminder() -> str:
+    """Ideas 66, 69: evento .ics próximo (simple) y recordatorio 15 min."""
+    path = os.getenv("JARVIS_ICS_FILE", "").strip()
+    if not path:
+        return ""
+    p = Path(os.path.expanduser(path))
+    if not p.is_file():
+        return ""
+    try:
+        raw = p.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+    m_sum = re.search(r"SUMMARY:([^\r\n]+)", raw)
+    m_dt = re.search(r"DTSTART(?:;[^:]*)?:([0-9TZ]+)", raw)
+    summary = (m_sum.group(1).strip() if m_sum else "Evento").replace("\\,", ",")
+    if not m_dt:
+        return f"Calendario local: {summary[:80]}."
+    ds = m_dt.group(1).strip()
+    evt: datetime | None = None
+    try:
+        if "Z" in ds:
+            evt = datetime.fromisoformat(ds.replace("Z", "+00:00"))
+            if evt.tzinfo:
+                evt = evt.astimezone().replace(tzinfo=None)
+        elif len(ds) >= 15 and "T" in ds:
+            evt = datetime.strptime(ds[:15], "%Y%m%dT%H%M%S")
+        elif len(ds) == 8:
+            evt = datetime.strptime(ds, "%Y%m%d")
+    except ValueError:
+        evt = None
+    if evt:
+        now = datetime.now()
+        delta = (evt - now).total_seconds() / 60.0
+        if 0 <= delta <= 15:
+            return f"Reunión en los próximos quince minutos: {summary[:100]}."
+        if delta > 15:
+            return f"Próximo evento .ics: {summary[:80]} ({evt.strftime('%Y-%m-%d %H:%M')})."
+    return f"Calendario local: {summary[:100]}."
+
+
 def _ollama_line() -> str:
     host = os.getenv("OLLAMA_HOST", "").strip()
     model = os.getenv("JARVIS_OLLAMA_MODEL", "").strip()
@@ -474,8 +623,12 @@ def build_saludo_annex(
     root = os.path.expanduser(new_project)
 
     for fn in (
+        _sn_isolated_notice,
+        _sn_tasks_file,
+        _sn_ics_reminder,
         _sn_temp,
         _sn_net,
+        _sn_net_iface_active,
         _sn_ping_gateway,
         _sn_top3,
         _sn_boot,
@@ -488,7 +641,10 @@ def build_saludo_annex(
         lambda: _sn_env_perms(root),
         lambda: _sn_git_ahead(root),
         lambda: _sn_branch_warn(root),
+        lambda: _sn_git_status_short(root),
         lambda: _sn_makefile(root),
+        _sn_updates_pending,
+        _sn_test_cmd_exit,
         _sn_uptime_pause,
         _moon_phase,
         _birthday_msg,

@@ -6,6 +6,7 @@ import os
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -55,6 +56,29 @@ class TestJarvisLista(unittest.TestCase):
         finally:
             if old is not None:
                 os.environ["JARVIS_REQUIRE_NETWORK"] = old
+
+    def test_network_ok_failure_when_required(self) -> None:
+        with patch.dict(os.environ, {"JARVIS_REQUIRE_NETWORK": "1"}):
+            with patch("socket.create_connection", side_effect=OSError("no route")):
+                self.assertFalse(jarvis_lista.network_ok())
+
+    def test_network_ok_success_when_required(self) -> None:
+        with patch.dict(os.environ, {"JARVIS_REQUIRE_NETWORK": "1"}):
+            with patch("socket.create_connection", return_value=MagicMock()):
+                self.assertTrue(jarvis_lista.network_ok())
+
+    def test_build_saludo_annex_privacy_empty(self) -> None:
+        s = jarvis_lista.build_saludo_annex(
+            privacy=True,
+            lista_completa=True,
+            new_project="/tmp",
+        )
+        self.assertEqual(s, "")
+
+    def test_isolated_notice_text(self) -> None:
+        with patch.dict(os.environ, {"JARVIS_ISOLATED_NOTICE": "1"}):
+            t = jarvis_lista._sn_isolated_notice()
+            self.assertIn("aislado", t.lower())
 
 
 if __name__ == "__main__":

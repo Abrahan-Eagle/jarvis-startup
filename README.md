@@ -59,4 +59,4 @@ Tabla canónica: **[docs/ENV.md](docs/ENV.md)** (incluye HUD, lista extendida, s
 
 ## Versión
 
-Actual **2.0.1** en `bienvenido_jarvis.py` (`__version__`); ver con `--version`.
+Actual **2.1.0** en `bienvenido_jarvis.py` (`__version__`); ver con `--version`. Cobertura de la lista 1–100: [docs/COBERTURA_IDEAS.md](docs/COBERTURA_IDEAS.md).
