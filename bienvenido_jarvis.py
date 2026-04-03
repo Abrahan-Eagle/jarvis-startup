@@ -21,7 +21,7 @@ from __future__ import annotations
 import json
 import sys
 
-__version__ = "2.3.2"
+__version__ = "2.3.3"
 
 import argparse
 import asyncio
@@ -184,7 +184,8 @@ def _tts_voice_effective() -> str:
     return JARVIS_TTS_VOICE
 
 VOICE_CHANNEL_INDEX = 0
-MUSIC_VOLUME = min(1.0, float(os.getenv("JARVIS_MUSIC_VOLUME", "0.4375")))
+# Por defecto ~3x el volumen histórico (0.4375); pygame máx 1.0
+MUSIC_VOLUME = min(1.0, float(os.getenv("JARVIS_MUSIC_VOLUME", "1.0")))
 
 # Retrasos entre pasos (segundos)
 DELAY_AFTER_OPENCODE = float(os.getenv("JARVIS_DELAY_OPENCODE", "1.2"))

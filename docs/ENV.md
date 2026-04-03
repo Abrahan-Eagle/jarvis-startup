@@ -19,7 +19,7 @@ Referencia única para `bienvenido_jarvis.py`, `jarvis_lista.py` y [`hud_overlay
 | `JARVIS_MUSIC_FADEOUT_MS` | Salida suave al terminar (ms), por defecto `1200`; `0` = corte directo. |
 | `JARVIS_TTS_VOICE` | Voz Edge (ej. `es-ES-AlvaroNeural`, `es-ES-ElviraNeural`). |
 | `JARVIS_TTS_RATE` | Velocidad TTS, ej. `+10%` o `-5%`. |
-| `JARVIS_MUSIC_VOLUME` | Volumen MP3 0.0–1.0 (por defecto `0.4375`). |
+| `JARVIS_MUSIC_VOLUME` | Volumen MP3 0.0–1.0 (por defecto `1.0`, ~3× el nivel histórico `0.4375`; pygame no admite >1.0). |
 | `JARVIS_SKIP_NETWORK` | `1` / `true`: no consulta wttr.in. |
 | `JARVIS_NO_NOTIFY` | `1` / `true`: no usa `notify-send`. |
 | `JARVIS_DELAY_OPENCODE` | Segundos tras abrir terminal OpenCode (default `1.2`). |
