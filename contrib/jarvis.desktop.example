@@ -2,13 +2,17 @@
 Type=Application
 Name=Jarvis Bienvenida
 Comment=Bienvenida por voz y entorno de trabajo (inspiración Iron Man). El proceso principal termina al acabar la secuencia; no es un servicio permanente.
-# Reemplaza TU_USUARIO y la ruta al clonar. Opción A: lanzador directo.
-# Exec=/home/TU_USUARIO/jarvis-startup/jarvis
-# Opción B (recomendada): script con retraso opcional y log en ~/.local/share/jarvis-startup/autostart.log
-Exec=/home/TU_USUARIO/jarvis-startup/scripts/jarvis_autostart.sh
-# Opcional: esperar 10 s (red/escritorio listos) — también se puede con variable en el entorno del usuario.
-# Exec=env JARVIS_AUTOSTART_DELAY_SEC=10 /home/TU_USUARIO/jarvis-startup/scripts/jarvis_autostart.sh
+# IMPORTANTE: no dejes "TU_USUARIO". Usa rutas absolutas o ejecuta:
+#   scripts/install_xdg_autostart.sh
+# (genera ~/.config/autostart/jarvis-bienvenida.desktop con tu $HOME real).
+#
+# Ejemplo manual (sustituye la ruta):
+Exec=env JARVIS_AUTOSTART_DELAY_SEC=15 JARVIS_AUTOSTART_LOG=1 /bin/bash /home/TU_USUARIO/jarvis-startup/scripts/jarvis_autostart.sh
+Path=/home/TU_USUARIO/jarvis-startup
 Icon=utilities-terminal
 Terminal=false
+StartupNotify=false
+DBusActivatable=false
 Categories=Utility;
 X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=15

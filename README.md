@@ -79,9 +79,12 @@ La secuencia principal **no es un demonio**: al terminar voz, música y apertura
 
 Para lanzarlo **al entrar en el escritorio**:
 
-1. Copia [`contrib/jarvis.desktop.example`](contrib/jarvis.desktop.example) a `~/.config/autostart/` y ajusta la ruta `Exec=` a tu usuario y repo.
-2. Recomendado usar [`scripts/jarvis_autostart.sh`](scripts/jarvis_autostart.sh): retraso opcional `JARVIS_AUTOSTART_DELAY_SEC`, log en `~/.local/share/jarvis-startup/autostart.log` (desactivar con `JARVIS_AUTOSTART_LOG=0`).
-3. Alternativa **systemd --user**: [`contrib/jarvis-user.service.example`](contrib/jarvis-user.service.example).
+1. **Recomendado:** ejecuta una vez [`scripts/install_xdg_autostart.sh`](scripts/install_xdg_autostart.sh) — genera `~/.config/autostart/jarvis-bienvenida.desktop` con **rutas absolutas** (evita el fallo típico de dejar `TU_USUARIO` en el ejemplo).
+2. Manual: copia [`contrib/jarvis.desktop.example`](contrib/jarvis.desktop.example) a `~/.config/autostart/`, sustituye **todas** las rutas por las tuyas y `chmod +x jarvis scripts/jarvis_autostart.sh`.
+3. [`scripts/jarvis_autostart.sh`](scripts/jarvis_autostart.sh): retraso `JARVIS_AUTOSTART_DELAY_SEC`, log en `~/.local/share/jarvis-startup/autostart.log` (`JARVIS_AUTOSTART_LOG=0` para desactivar).
+4. Alternativa **systemd --user**: [`contrib/jarvis-user.service.example`](contrib/jarvis-user.service.example).
+
+Si **no arranca tras reiniciar**, sigue [docs/TROUBLESHOOTING_AUTOSTART.md](docs/TROUBLESHOOTING_AUTOSTART.md).
 
 Más detalle: [`docs/CONTRIB.md`](docs/CONTRIB.md).
 
@@ -91,4 +94,4 @@ Tabla canónica: **[docs/ENV.md](docs/ENV.md)** (incluye HUD, lista extendida, s
 
 ## Versión
 
-Actual **2.3.1** en `bienvenido_jarvis.py` (`__version__`); ver con `jarvis version` o `--version`. Cobertura de la lista 1–100: [docs/COBERTURA_IDEAS.md](docs/COBERTURA_IDEAS.md).
+Actual **2.3.2** en `bienvenido_jarvis.py` (`__version__`); ver con `jarvis version` o `--version`. Cobertura de la lista 1–100: [docs/COBERTURA_IDEAS.md](docs/COBERTURA_IDEAS.md).

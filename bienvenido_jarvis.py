@@ -21,7 +21,7 @@ from __future__ import annotations
 import json
 import sys
 
-__version__ = "2.3.1"
+__version__ = "2.3.2"
 
 import argparse
 import asyncio

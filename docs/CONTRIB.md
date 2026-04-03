@@ -1,7 +1,7 @@
 # Contribuir / despliegue local
 
 - **Entorno:** [`install.sh`](../install.sh) crea `venv/` e instala `requirements.txt`.
-- **Autostart al iniciar sesión:** [`scripts/jarvis_autostart.sh`](../scripts/jarvis_autostart.sh) — retraso opcional (`JARVIS_AUTOSTART_DELAY_SEC`), log opcional (`JARVIS_AUTOSTART_LOG`). Plantillas: [`jarvis.desktop.example`](../contrib/jarvis.desktop.example) → `~/.config/autostart/`, [`jarvis-user.service.example`](../contrib/jarvis-user.service.example) (systemd --user; ajustar rutas).
+- **Autostart al iniciar sesión:** [`scripts/install_xdg_autostart.sh`](../scripts/install_xdg_autostart.sh) (genera el `.desktop` con rutas correctas), [`scripts/jarvis_autostart.sh`](../scripts/jarvis_autostart.sh) — retraso (`JARVIS_AUTOSTART_DELAY_SEC`), log (`JARVIS_AUTOSTART_LOG`). Plantilla manual: [`jarvis.desktop.example`](../contrib/jarvis.desktop.example). Problemas: [TROUBLESHOOTING_AUTOSTART.md](TROUBLESHOOTING_AUTOSTART.md). Systemd: [`jarvis-user.service.example`](../contrib/jarvis-user.service.example).
 - **Variables:** [`ENV.md`](ENV.md).
 - **Config JSON:** `~/.config/jarvis-startup/config.json` — `titulo`, `project`, `theme`, `music_file`, `profile` (ver README); precedencia por encima del perfil embebido y por debajo del entorno.
 - **Pruebas:** `python -m unittest discover -s tests -v` desde la raíz del repo.
