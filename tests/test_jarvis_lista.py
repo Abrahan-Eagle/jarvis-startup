@@ -58,7 +58,10 @@ class TestJarvisLista(unittest.TestCase):
                 os.environ["JARVIS_REQUIRE_NETWORK"] = old
 
     def test_network_ok_failure_when_required(self) -> None:
-        with patch.dict(os.environ, {"JARVIS_REQUIRE_NETWORK": "1"}):
+        with patch.dict(
+            os.environ,
+            {"JARVIS_REQUIRE_NETWORK": "1", "JARVIS_NETWORK_NMCLI_FALLBACK": "0"},
+        ):
             with patch("socket.create_connection", side_effect=OSError("no route")):
                 self.assertFalse(jarvis_lista.network_ok())
 
@@ -66,6 +69,20 @@ class TestJarvisLista(unittest.TestCase):
         with patch.dict(os.environ, {"JARVIS_REQUIRE_NETWORK": "1"}):
             with patch("socket.create_connection", return_value=MagicMock()):
                 self.assertTrue(jarvis_lista.network_ok())
+
+    def test_network_ok_nmcli_fallback_when_socket_fails(self) -> None:
+        env = {
+            "JARVIS_REQUIRE_NETWORK": "1",
+            "JARVIS_NETWORK_NMCLI_FALLBACK": "1",
+        }
+        fake_nm = MagicMock()
+        fake_nm.returncode = 0
+        fake_nm.stdout = "connected\n"
+        with patch.dict(os.environ, env):
+            with patch("socket.create_connection", side_effect=OSError("no route")):
+                with patch("shutil.which", return_value="/usr/bin/nmcli"):
+                    with patch("jarvis_lista._run", return_value=fake_nm):
+                        self.assertTrue(jarvis_lista.network_ok())
 
     def test_build_saludo_annex_privacy_empty(self) -> None:
         s = jarvis_lista.build_saludo_annex(

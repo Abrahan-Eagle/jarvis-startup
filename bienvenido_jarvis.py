@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 import sys
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 
 if __name__ == "__main__" and "--version" in sys.argv:
     print(f"jarvis-bienvenida {__version__}")
@@ -102,6 +102,56 @@ JARVIS_TTS_VOICE = os.getenv("JARVIS_TTS_VOICE", "es-ES-AlvaroNeural").strip()
 JARVIS_TTS_RATE = os.getenv("JARVIS_TTS_RATE", "+0%").strip()
 if not JARVIS_TTS_RATE.startswith(("+", "-")):
     JARVIS_TTS_RATE = "+0%"
+
+
+def _ui_lang() -> str:
+    """Idea 90: idioma UI (es/en) vía JARVIS_LANG o prefijo de LANG."""
+    j = os.getenv("JARVIS_LANG", "").strip().lower()[:2]
+    if j in ("en", "es"):
+        return j
+    lang = os.getenv("LANG", "")
+    if lang.lower().startswith("en"):
+        return "en"
+    return "es"
+
+
+_STRINGS: dict[str, dict[str, str]] = {
+    "es": {
+        "seq_start": "\n🚀  Iniciando secuencia de bienvenida…\n",
+        "seq_done": "\n✅  Secuencia completada.\n",
+        "dry_run": "  [dry-run] Sin chime, TTS, música ni lanzar aplicaciones.\n",
+        "readme": "  📄  Abriendo README del proyecto.",
+        "pdf": "  📑  Abriendo documentos PDF configurados.",
+        "shot": "  📷  Captura de pantalla guardada (consentimiento explícito).",
+        "hud": "  📟  HUD en esquina (cierra la ventana para quitar).",
+        "notify_start": "Sesión de taller iniciada.",
+    },
+    "en": {
+        "seq_start": "\n🚀  Starting welcome sequence…\n",
+        "seq_done": "\n✅  Sequence complete.\n",
+        "dry_run": "  [dry-run] No chime, TTS, music, or launching apps.\n",
+        "readme": "  📄  Opening project README.",
+        "pdf": "  📑  Opening configured PDF documents.",
+        "shot": "  📷  Screenshot saved (explicit consent).",
+        "hud": "  📟  HUD corner window (close it to dismiss).",
+        "notify_start": "Workshop session started.",
+    },
+}
+
+
+def _tr(key: str) -> str:
+    lang = _ui_lang()
+    return _STRINGS.get(lang, _STRINGS["es"]).get(key, _STRINGS["es"].get(key, key))
+
+
+def _tts_voice_effective() -> str:
+    """Idea 8: voz Edge según JARVIS_TTS_VOICE o auto según LANG."""
+    if _truthy_env("JARVIS_TTS_AUTO_LANG"):
+        lang = (os.getenv("LANG") or "").lower()
+        if lang.startswith("en"):
+            return os.getenv("JARVIS_TTS_VOICE_EN", "en-US-GuyNeural").strip()
+        return os.getenv("JARVIS_TTS_VOICE_ES", "es-ES-AlvaroNeural").strip()
+    return JARVIS_TTS_VOICE
 
 VOICE_CHANNEL_INDEX = 0
 MUSIC_VOLUME = min(1.0, float(os.getenv("JARVIS_MUSIC_VOLUME", "0.4375")))
@@ -268,7 +318,7 @@ def _launch_hud_overlay(dry_run: bool) -> bool:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
-        print("  📟  HUD en esquina (cierra la ventana para quitar).")
+        print(_tr("hud"))
         return True
     except OSError as e:
         print(f"  ⚠️  No se pudo iniciar el HUD (¿python3-tk?): {e}")
@@ -544,7 +594,7 @@ def _maybe_open_readme(dry_run: bool) -> None:
         return
     try:
         subprocess.Popen([xdg, readme], start_new_session=True)
-        print("  📄  Abriendo README del proyecto.")
+        print(_tr("readme"))
     except OSError:
         pass
 
@@ -567,14 +617,95 @@ def _reproducir_chime_env(var_name: str, dry_run: bool) -> None:
         pass
 
 
+def _notify_session_start(dry_run: bool) -> None:
+    """Idea 1: notificación opcional al inicio (tema / sesión)."""
+    if dry_run or NO_NOTIFY:
+        return
+    if not _truthy_env("JARVIS_NOTIFY_START"):
+        return
+    if subprocess.run(["which", "notify-send"], capture_output=True).returncode != 0:
+        return
+    try:
+        titulo = "Jarvis"
+        cuerpo = f"{_tr('notify_start')} ({JARVIS_THEME})"
+        subprocess.run(
+            ["notify-send", "-a", "Jarvis", titulo, cuerpo],
+            capture_output=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+
+
+def _maybe_open_pdfs(dry_run: bool) -> None:
+    """Idea 74: rutas PDF separadas por : o coma; xdg-open."""
+    raw = os.getenv("JARVIS_PDF_PATHS", "").strip()
+    if not raw or dry_run:
+        return
+    xdg = shutil.which("xdg-open")
+    if not xdg:
+        return
+    sep = ":" if ":" in raw else ","
+    opened = 0
+    for part in raw.split(sep):
+        p = os.path.expanduser(part.strip())
+        if p.lower().endswith(".pdf") and os.path.isfile(p):
+            try:
+                subprocess.Popen([xdg, p], start_new_session=True)
+                opened += 1
+            except OSError:
+                pass
+    if opened:
+        print(_tr("pdf"))
+
+
+def _maybe_screenshot(dry_run: bool) -> None:
+    """Idea 31: captura opt-in con consentimiento explícito."""
+    if dry_run or not _truthy_env("JARVIS_SCREENSHOT_CONSENT"):
+        return
+    tool = None
+    for t in ("grim", "scrot", "gnome-screenshot"):
+        if shutil.which(t):
+            tool = t
+            break
+    if not tool:
+        return
+    base = os.path.expanduser(
+        os.getenv("JARVIS_SCREENSHOT_DIR", "~/.local/share/jarvis-startup/screenshots")
+    )
+    try:
+        os.makedirs(base, exist_ok=True)
+    except OSError:
+        return
+    ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    path = os.path.join(base, f"jarvis_{ts}.png")
+    try:
+        if tool == "grim":
+            subprocess.run(["grim", path], check=False, timeout=15, capture_output=True)
+        elif tool == "scrot":
+            subprocess.run(["scrot", path], check=False, timeout=15, capture_output=True)
+        else:
+            subprocess.run(
+                ["gnome-screenshot", "-f", path],
+                check=False,
+                timeout=15,
+                capture_output=True,
+            )
+        if os.path.isfile(path):
+            print(_tr("shot"))
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+
+
 def secuencia_bienvenida(dry_run: bool = False) -> None:
-    print("\n🚀  Iniciando secuencia de bienvenida…\n")
+    print(_tr("seq_start"))
+    _notify_session_start(dry_run=dry_run)
     op = os.getenv("JARVIS_OPENING_PHRASE", "").strip()
     if op:
         print(f"  {op}\n")
     _print_banner_optional()
     if dry_run:
-        print("  [dry-run] Sin chime, TTS, música ni lanzar aplicaciones.\n")
+        print(_tr("dry_run"))
 
     if jarvis_lista:
         jarvis_lista.maybe_jitter_startup()
@@ -590,7 +721,7 @@ def secuencia_bienvenida(dry_run: bool = False) -> None:
     hablar(mensajes[1], dry_run=dry_run)
     abrir_apps_lado_a_lado(dry_run=dry_run)
 
-    print("\n✅  Secuencia completada.\n")
+    print(_tr("seq_done"))
     closing = os.getenv("JARVIS_CLOSING_PHRASE", "").strip()
     if closing:
         print(f"  {closing}")
@@ -609,6 +740,8 @@ def secuencia_bienvenida(dry_run: bool = False) -> None:
             pass
     _reproducir_chime_env("JARVIS_CHIME_SUCCESS", dry_run)
     _maybe_open_readme(dry_run)
+    _maybe_open_pdfs(dry_run)
+    _maybe_screenshot(dry_run)
     notificar_escritorio(dry_run=dry_run)
     hud_ok = _launch_hud_overlay(dry_run=dry_run)
     extra_run: dict = {
@@ -626,7 +759,7 @@ def secuencia_bienvenida(dry_run: bool = False) -> None:
 
 
 async def generar_audio_edge(texto: str, archivo: str) -> None:
-    communicate = edge_tts.Communicate(texto, JARVIS_TTS_VOICE, rate=JARVIS_TTS_RATE)
+    communicate = edge_tts.Communicate(texto, _tts_voice_effective(), rate=JARVIS_TTS_RATE)
     await communicate.save(archivo)
 
 
@@ -889,7 +1022,7 @@ def mostrar_config(dry_run: bool = False) -> None:
         f"  LISTA_COMPLETA / FOCUS / EXPO / TEXT_ONLY = {LISTA_COMPLETA} / {FOCUS_MODE} / {EXPO_MODE} / {TEXT_ONLY}"
     )
     print(f"  NEW_PROJECT = {NEW_PROJECT}")
-    print(f"  TTS = {JARVIS_TTS_VOICE} @ {JARVIS_TTS_RATE}")
+    print(f"  TTS = {_tts_voice_effective()} @ {JARVIS_TTS_RATE} (JARVIS_TTS_VOICE={JARVIS_TTS_VOICE})")
     print(f"  JARVIS_USE_HOSTNAME = {USE_HOSTNAME}")
     print(f"  JARVIS_USE_BATTERY = {USE_BATTERY}")
     print(f"  SKIP_NETWORK = {SKIP_NETWORK}")
@@ -928,6 +1061,7 @@ def main(dry_run: bool = False) -> None:
         sys.exit(130)
     except Exception as e:
         _escribir_last_run(False, dry, {"error": str(e)})
+        _reproducir_chime_env("JARVIS_CHIME_ERROR", dry)
         raise
 
 

@@ -11,3 +11,5 @@ Confirmación antes de comandos destructivos (idea 14): [`scripts/jarvis_confirm
 
 - Normalización de audio offline (idea 21): [`README-normalize-audio.md`](../contrib/README-normalize-audio.md).
 - Reglas de ventana / compositor (ideas 61, 63): [`jarvis-window-hints.stub.sh`](../contrib/jarvis-window-hints.stub.sh) (plantilla; no automatiza el escritorio).
+- Chat voz + IA externa (idea 78): [`README-voice-chat-hint.md`](../contrib/README-voice-chat-hint.md).
+- Firma GPG de releases (idea 51): [`gpg-sign-release.example.sh`](../contrib/gpg-sign-release.example.sh).

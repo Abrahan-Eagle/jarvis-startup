@@ -9,3 +9,4 @@ fi
 ./venv/bin/pip install -r requirements.txt
 echo "Listo. Activa con: source venv/bin/activate"
 echo "Prueba: ./jarvis --dry-run"
+echo "Opcional (aislado del sistema): pip install pipx && pipx install <paquete> — ver docs/CONTRIB.md"

@@ -497,6 +497,25 @@ def _sn_git_status_short(root: str) -> str:
     return ""
 
 
+def _field_test_count_bump() -> int:
+    """Idea 71: incrementa contador cuando JARVIS_TEST_CMD termina con éxito."""
+    path = Path.home() / ".local/share" / XDG_APP_DIR / "field_tests.json"
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        n = 0
+        if path.is_file():
+            data = json.loads(path.read_text(encoding="utf-8"))
+            n = int(data.get("n", 0))
+        n += 1
+        path.write_text(
+            json.dumps({"n": n, "last_ok": datetime.now().isoformat()}),
+            encoding="utf-8",
+        )
+        return n
+    except (OSError, json.JSONDecodeError, ValueError):
+        return 0
+
+
 def _sn_test_cmd_exit() -> str:
     """Idea 57: comando de prueba configurable; solo código de salida."""
     cmd = os.getenv("JARVIS_TEST_CMD", "").strip()
@@ -508,7 +527,12 @@ def _sn_test_cmd_exit() -> str:
         to = 60.0
     to = max(5.0, min(120.0, to))
     r = _run(["bash", "-c", cmd], to)
-    return f"Prueba configurada del taller: código de salida {r.returncode}."
+    extra = ""
+    if r.returncode == 0:
+        n = _field_test_count_bump()
+        if n > 0:
+            extra = f" Pruebas de campo exitosas acumuladas: {n}."
+    return f"Prueba configurada del taller: código de salida {r.returncode}.{extra}"
 
 
 def _sn_tasks_file() -> str:
@@ -581,6 +605,109 @@ def _sn_ics_reminder() -> str:
     return f"Calendario local: {summary[:100]}."
 
 
+def _sn_optional_pcspkr_beep() -> str:
+    """Idea 23: beep opcional (beep o speaker-test), sin fallar si no hay hardware."""
+    if os.getenv("JARVIS_PCSPKR_BEEP", "").strip().lower() not in ("1", "true", "yes", "on"):
+        return ""
+    if shutil.which("beep"):
+        _run(["beep", "-f", "1000", "-l", "40"], 1.0)
+        return "Beep de sistema opcional emitido (comando beep)."
+    return "Beep opcional solicitado: instale el paquete «beep» (pcspkr) si desea tono en consola."
+
+
+def _sn_xrandr_monitors() -> str:
+    """Idea 86: número de salidas conectadas vía xrandr."""
+    if not shutil.which("xrandr"):
+        return ""
+    r = _run(["bash", "-c", "xrandr 2>/dev/null | grep -c ' connected' || true"], 3)
+    if r.returncode != 0:
+        return ""
+    raw = (r.stdout or "").strip()
+    if not raw.isdigit():
+        return ""
+    n = int(raw)
+    if n <= 0:
+        return ""
+    return f"Pantallas detectadas (xrandr): {n} salida(s) conectada(s)."
+
+
+def _sn_pactl_audio() -> str:
+    """Idea 88: sink por defecto (PipeWire/PulseAudio)."""
+    if not shutil.which("pactl"):
+        return ""
+    r = _run(["pactl", "get-default-sink"], 2)
+    if r.returncode != 0:
+        return ""
+    sink = (r.stdout or "").strip()
+    if not sink:
+        return ""
+    return f"Audio: sink por defecto «{sink[:100]}»."
+
+
+def _sn_focus_windows_hint() -> str:
+    """Idea 64: minimizar todo salvo IDE — solo guía; ver contrib."""
+    if os.getenv("JARVIS_FOCUS_WINDOWS_HINT", "").strip().lower() not in ("1", "true", "yes", "on"):
+        return ""
+    return (
+        "Enfoque de ventanas: use reglas del compositor o "
+        "«contrib/jarvis-window-hints.stub.sh»; Jarvis no minimiza ventanas ajenas."
+    )
+
+
+def _sn_gpg_release_hint() -> str:
+    """Idea 51: firma GPG — guía en contrib."""
+    if os.getenv("JARVIS_GPG_RELEASE_HINT", "").strip().lower() not in ("1", "true", "yes", "on"):
+        return ""
+    return "Release: firme artefactos con GPG según «contrib/gpg-sign-release.example.sh»."
+
+
+def _sn_voice_chat_hint() -> str:
+    """Idea 78: chat por voz con IA externa al proceso principal."""
+    if os.getenv("JARVIS_VOICE_CHAT_HINT", "").strip().lower() not in ("1", "true", "yes", "on"):
+        return ""
+    return (
+        "Chat voz: use un cliente compatible con Ollama o su API; "
+        "ver «contrib/README-voice-chat-hint.md»."
+    )
+
+
+def _ollama_commit_suggestion(root: str) -> str:
+    """Idea 77: sugerencia de mensaje de commit vía Ollama (opt-in)."""
+    if os.getenv("JARVIS_OLLAMA_COMMIT_MSG", "").strip().lower() not in ("1", "true", "yes", "on"):
+        return ""
+    host = os.getenv("OLLAMA_HOST", "").strip()
+    model = os.getenv("JARVIS_OLLAMA_MODEL", "").strip()
+    if not host or not model:
+        return ""
+    git_dir = Path(root) / ".git"
+    if not git_dir.exists():
+        return ""
+    stat = _run(["git", "-C", root, "diff", "--stat"], 4)
+    diff_preview = (stat.stdout or "").strip()[:1200]
+    if not diff_preview:
+        return ""
+    try:
+        import urllib.request
+
+        prompt = (
+            "Responde UNA sola línea: mensaje de commit convencional en español "
+            "(tipo prefijo: ámbito) para estos cambios:\n"
+            f"{diff_preview}"
+        )
+        req = urllib.request.Request(
+            f"{host.rstrip('/')}/api/generate",
+            data=json.dumps({"model": model, "prompt": prompt, "stream": False}).encode(),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            body = json.loads(resp.read().decode())
+        t = (body.get("response") or "").strip().splitlines()[0][:240]
+        return f"Sugerencia de commit (IA local): {t}" if t else ""
+    except Exception:
+        return ""
+
+
 def _ollama_line() -> str:
     host = os.getenv("OLLAMA_HOST", "").strip()
     model = os.getenv("JARVIS_OLLAMA_MODEL", "").strip()
@@ -624,6 +751,12 @@ def build_saludo_annex(
 
     for fn in (
         _sn_isolated_notice,
+        _sn_gpg_release_hint,
+        _sn_voice_chat_hint,
+        _sn_focus_windows_hint,
+        _sn_optional_pcspkr_beep,
+        _sn_xrandr_monitors,
+        _sn_pactl_audio,
         _sn_tasks_file,
         _sn_ics_reminder,
         _sn_temp,
@@ -655,6 +788,7 @@ def build_saludo_annex(
         _protocol_file,
         _security_reminder,
         _ollama_line,
+        lambda: _ollama_commit_suggestion(root),
     ):
         try:
             s = fn()
@@ -709,7 +843,7 @@ def maybe_jitter_startup() -> None:
 
 
 def network_ok() -> bool:
-    """Idea 81: comprobar conectividad básica."""
+    """Idea 81: conectividad (socket); opcionalmente nmcli si el socket falla."""
     if os.getenv("JARVIS_REQUIRE_NETWORK", "").lower() not in ("1", "true", "yes"):
         return True
     try:
@@ -718,13 +852,34 @@ def network_ok() -> bool:
         socket.create_connection(("1.1.1.1", 443), timeout=3)
         return True
     except OSError:
+        pass
+    if os.getenv("JARVIS_NETWORK_NMCLI_FALLBACK", "1").strip().lower() in (
+        "0",
+        "false",
+        "no",
+        "off",
+    ):
         return False
+    nm = shutil.which("nmcli")
+    if not nm:
+        return False
+    r = _run([nm, "-t", "-f", "STATE", "g"], 3)
+    if r.returncode != 0:
+        return False
+    st = (r.stdout or "").strip().lower()
+    return "connected" in st
 
 
 def monitor_likely_on() -> bool:
-    """Idea 82: heurística débil."""
+    """Idea 82: DISPLAY/Wayland; opcionalmente xset q si JARVIS_MONITOR_XSET=1."""
     if os.getenv("JARVIS_REQUIRE_MONITOR", "").lower() not in ("1", "true", "yes"):
         return True
-    if os.getenv("WAYLAND_DISPLAY") or os.getenv("DISPLAY"):
+    if not (os.getenv("WAYLAND_DISPLAY") or os.getenv("DISPLAY")):
+        return False
+    if os.getenv("JARVIS_MONITOR_XSET", "").strip().lower() not in ("1", "true", "yes", "on"):
         return True
-    return False
+    disp = os.getenv("DISPLAY", "").strip()
+    if not disp or not shutil.which("xset"):
+        return True
+    r = _run(["xset", "q"], 2.5)
+    return r.returncode == 0

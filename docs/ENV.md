@@ -61,5 +61,19 @@ Referencia única para `bienvenido_jarvis.py`, `jarvis_lista.py` y [`hud_overlay
 | `JARVIS_SKIP_UPDATES_CHECK` | `1`: no intenta detectar actualizaciones del sistema en el anexo. |
 | `JARVIS_MISSIONS_FILE` | Primera línea no vacía se muestra en el HUD (idea 29). |
 | `JARVIS_HUD_CPU_BAR` | `0`: oculta la barra de color por CPU en el HUD (default activo). |
+| `JARVIS_NETWORK_NMCLI_FALLBACK` | `1` (default): si el socket a 1.1.1.1 falla, intenta `nmcli -t -f STATE g` = connected. `0` desactiva. |
+| `JARVIS_MONITOR_XSET` | `1`: con `JARVIS_REQUIRE_MONITOR=1` y `DISPLAY`, exige `xset q` exit 0 (servidor X respondiendo). |
+| `JARVIS_PCSPKR_BEEP` | `1`: en anexo intenta `beep` corto (paquete `beep` en sistema). |
+| `JARVIS_OLLAMA_COMMIT_MSG` | `1`: con `OLLAMA_HOST` + `JARVIS_OLLAMA_MODEL` y repo git, sugiere mensaje de commit según `git diff --stat`. |
+| `JARVIS_VOICE_CHAT_HINT` | `1`: añade línea al anexo y enlaza `contrib/README-voice-chat-hint.md`. |
+| `JARVIS_FOCUS_WINDOWS_HINT` | `1`: recuerda usar compositor / `contrib/jarvis-window-hints.stub.sh` (no minimiza ventanas ajenas). |
+| `JARVIS_GPG_RELEASE_HINT` | `1`: menciona `contrib/gpg-sign-release.example.sh` en anexo. |
+| `JARVIS_PDF_PATHS` | Rutas `.pdf` separadas por `:` o `,`; se abren con `xdg-open` tras README (si existen archivos). |
+| `JARVIS_SCREENSHOT_CONSENT` | `1`: requiere consentimiento explícito; captura con `grim` / `scrot` / `gnome-screenshot`. |
+| `JARVIS_SCREENSHOT_DIR` | Directorio para capturas (default `~/.local/share/jarvis-startup/screenshots`). |
+| `JARVIS_NOTIFY_START` | `1`: `notify-send` al iniciar la secuencia (antes del banner). |
+| `JARVIS_CHIME_ERROR` | Ruta a `.wav`/`.ogg` si la secuencia falla con excepción (antes de relanzar error). |
+| `JARVIS_LANG` | `es` o `en` para cadenas de consola traducidas (`_tr`); si vacío, se infiere de `LANG`. |
+| `JARVIS_TTS_AUTO_LANG` | `1`: elige voz Edge según `LANG` (`JARVIS_TTS_VOICE_EN` / `JARVIS_TTS_VOICE_ES`). |
 
 Extensiones en `jarvis_lista.py` y documentos en `docs/` pueden añadir variables; esta tabla cubre el flujo principal.
