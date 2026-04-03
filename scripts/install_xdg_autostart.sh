@@ -27,5 +27,6 @@ X-GNOME-Autostart-Delay=${DELAY}
 EOF
 
 echo "Instalado: $DESKTOP_FILE"
-echo "Log: ~/.local/share/jarvis-startup/autostart.log"
-echo "Prueba: gtk-launch jarvis-bienvenida  (o cierra sesión y vuelve a entrar)"
+echo "Log (tras la 1ª ejecución): cat ~/.local/share/jarvis-startup/autostart.log"
+echo "Prueba: ./scripts/jarvis_autostart.sh   o   gio launch $DESKTOP_FILE"
+echo "  (gtk-launch: sudo apt install libgtk-3-bin)"

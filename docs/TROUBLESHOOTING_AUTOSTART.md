@@ -15,20 +15,36 @@
    ```
 
 3. **Log**  
-   Si `JARVIS_AUTOSTART_LOG=1` (por defecto en el instalador), mira:
-   ```text
-   ~/.local/share/jarvis-startup/autostart.log
+   El archivo **no existe** hasta que `jarvis_autostart.sh` se ejecuta al menos una vez con log activado. Para **leerlo** (no lo ejecutes como comando):
+   ```bash
+   cat ~/.local/share/jarvis-startup/autostart.log
    ```
-   Si el archivo no existe tras un login, el `.desktop` no se ejecutó (ruta mala, autostart desactivado en el escritorio, o sesión no gráfica).
+   Para **forzar** una primera ejecución y crear el log:
+   ```bash
+   cd ~/jarvis-startup   # o la ruta de tu clon
+   ./scripts/jarvis_autostart.sh
+   ```
+   Si el archivo sigue sin existir tras un login, el `.desktop` no se lanzó (ruta mala, autostart desactivado, o sesión no gráfica).
 
 4. **GNOME / “Aplicaciones al inicio”**  
    Abre *Aplicaciones al inicio* (Startup Applications) y comprueba que *Jarvis Bienvenida* esté activada.
 
-5. **Probar sin reiniciar**
-   ```bash
-   gtk-launch jarvis-bienvenida
-   ```
-   Si falla, el error suele verse en la terminal o en `autostart.log`.
+5. **Probar sin reiniciar** (elige una opción)
+
+   - **Directo (siempre funciona):** ejecuta el script que usa el autostart:
+     ```bash
+     /ruta/a/jarvis-startup/scripts/jarvis_autostart.sh
+     ```
+   - **`gtk-launch`** (paquete `libgtk-3-bin` en Debian/Ubuntu):
+     ```bash
+     sudo apt install libgtk-3-bin
+     gtk-launch jarvis-bienvenida
+     ```
+   - **Sin instalar nada extra:** abre el `.desktop` con GLib (suele estar instalado):
+     ```bash
+     gio launch ~/.config/autostart/jarvis-bienvenida.desktop
+     ```
+   Si falla, revisa la terminal o `cat ~/.local/share/jarvis-startup/autostart.log`.
 
 6. **Reinicio vs cerrar sesión**  
    Tras un reinicio completo, a veces la red o el escritorio tardan; el instalador pone `JARVIS_AUTOSTART_DELAY_SEC=15` y `X-GNOME-Autostart-Delay`. Puedes subir el retraso:
