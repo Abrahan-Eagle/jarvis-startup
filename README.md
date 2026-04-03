@@ -73,7 +73,17 @@ Con `JARVIS_CONFIG_STRICT=1`, claves desconocidas en el JSON generan aviso en st
 
 Roadmap priorizado estilo película: [`docs/ROADMAP_PELICULA.md`](docs/ROADMAP_PELICULA.md).
 
-Autostart (ejemplo): copia y edita la ruta en [`contrib/jarvis.desktop.example`](contrib/jarvis.desktop.example) hacia `~/.config/autostart/`. Más opciones (venv, systemd, tests): [`docs/CONTRIB.md`](docs/CONTRIB.md).
+### Inicio de sesión (autostart)
+
+La secuencia principal **no es un demonio**: al terminar voz, música y apertura de apps, el proceso **sale**. Puede seguir abierta la ventana del **HUD** (`JARVIS_HUD=1`) o Cursor/OpenCode, pero **no** queda un proceso `jarvis` escuchando en segundo plano.
+
+Para lanzarlo **al entrar en el escritorio**:
+
+1. Copia [`contrib/jarvis.desktop.example`](contrib/jarvis.desktop.example) a `~/.config/autostart/` y ajusta la ruta `Exec=` a tu usuario y repo.
+2. Recomendado usar [`scripts/jarvis_autostart.sh`](scripts/jarvis_autostart.sh): retraso opcional `JARVIS_AUTOSTART_DELAY_SEC`, log en `~/.local/share/jarvis-startup/autostart.log` (desactivar con `JARVIS_AUTOSTART_LOG=0`).
+3. Alternativa **systemd --user**: [`contrib/jarvis-user.service.example`](contrib/jarvis-user.service.example).
+
+Más detalle: [`docs/CONTRIB.md`](docs/CONTRIB.md).
 
 ## Variables de entorno
 
@@ -81,4 +91,4 @@ Tabla canónica: **[docs/ENV.md](docs/ENV.md)** (incluye HUD, lista extendida, s
 
 ## Versión
 
-Actual **2.3.0** en `bienvenido_jarvis.py` (`__version__`); ver con `jarvis version` o `--version`. Cobertura de la lista 1–100: [docs/COBERTURA_IDEAS.md](docs/COBERTURA_IDEAS.md).
+Actual **2.3.1** en `bienvenido_jarvis.py` (`__version__`); ver con `jarvis version` o `--version`. Cobertura de la lista 1–100: [docs/COBERTURA_IDEAS.md](docs/COBERTURA_IDEAS.md).

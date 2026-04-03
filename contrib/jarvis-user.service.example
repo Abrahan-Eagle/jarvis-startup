@@ -1,15 +1,17 @@
 # Ejemplo systemd --user para ejecutar Jarvis al iniciar sesión gráfica.
-# Copiar a ~/.config/systemd/user/jarvis.service y ajustar WorkingDirectory / ExecStart.
+# El servicio es Type=oneshot: el proceso ExecStart termina cuando acaba la bienvenida (no queda un daemon Jarvis).
+# Copiar a ~/.config/systemd/user/jarvis.service y ajustar rutas.
 #
 #   mkdir -p ~/.config/systemd/user
 #   cp contrib/jarvis-user.service.example ~/.config/systemd/user/jarvis.service
 #   systemctl --user daemon-reload
 #   systemctl --user enable --now jarvis.service
 #
-# Recomendado: JARVIS_REQUIRE_MONITOR=1 y, si aplica, JARVIS_REQUIRE_NETWORK=1 en Environment=.
+# Recomendado: JARVIS_REQUIRE_MONITOR=1. Red opcional: JARVIS_REQUIRE_NETWORK=1 solo si quieres abortar sin Internet.
+# Retraso opcional: Environment=JARVIS_AUTOSTART_DELAY_SEC=10
 
 [Unit]
-Description=Jarvis bienvenida (Zonix taller)
+Description=Jarvis bienvenida (al iniciar sesión)
 After=graphical-session.target
 
 [Service]
@@ -17,7 +19,7 @@ Type=oneshot
 WorkingDirectory=%h/jarvis-startup
 Environment=PATH=%h/jarvis-startup/venv/bin:/usr/local/bin:/usr/bin
 Environment=JARVIS_REQUIRE_MONITOR=1
-ExecStart=%h/jarvis-startup/jarvis
+ExecStart=%h/jarvis-startup/scripts/jarvis_autostart.sh
 RemainAfterExit=yes
 
 [Install]

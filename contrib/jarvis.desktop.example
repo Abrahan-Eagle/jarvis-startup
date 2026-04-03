@@ -1,8 +1,13 @@
 [Desktop Entry]
 Type=Application
 Name=Jarvis Bienvenida
-Comment=Bienvenida por voz y entorno de trabajo (inspiración Iron Man)
-Exec=/home/TU_USUARIO/jarvis-startup/jarvis
+Comment=Bienvenida por voz y entorno de trabajo (inspiración Iron Man). El proceso principal termina al acabar la secuencia; no es un servicio permanente.
+# Reemplaza TU_USUARIO y la ruta al clonar. Opción A: lanzador directo.
+# Exec=/home/TU_USUARIO/jarvis-startup/jarvis
+# Opción B (recomendada): script con retraso opcional y log en ~/.local/share/jarvis-startup/autostart.log
+Exec=/home/TU_USUARIO/jarvis-startup/scripts/jarvis_autostart.sh
+# Opcional: esperar 10 s (red/escritorio listos) — también se puede con variable en el entorno del usuario.
+# Exec=env JARVIS_AUTOSTART_DELAY_SEC=10 /home/TU_USUARIO/jarvis-startup/scripts/jarvis_autostart.sh
 Icon=utilities-terminal
 Terminal=false
 Categories=Utility;
