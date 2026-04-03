@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Lanzador: usa el venv del repo si existe
+set -euo pipefail
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -x "$DIR/venv/bin/python" ]]; then
+  exec "$DIR/venv/bin/python" -u "$DIR/bienvenido_jarvis.py" "$@"
+else
+  exec python3 -u "$DIR/bienvenido_jarvis.py" "$@"
+fi

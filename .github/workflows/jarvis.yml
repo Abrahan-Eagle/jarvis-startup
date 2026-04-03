@@ -1,0 +1,26 @@
+name: jarvis
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Syntax
+        run: |
+          python -m py_compile bienvenido_jarvis.py jarvis_lista.py hud_overlay.py
+          python -m py_compile scripts/jarvis_confirm.py
+      - name: Unit tests (jarvis_lista)
+        run: python -m unittest discover -s tests -v
+      - name: Dry-run
+        run: python bienvenido_jarvis.py --dry-run
