@@ -1,5 +1,7 @@
 # Jarvis — bienvenida al iniciar (Linux)
 
+**jarvis-startup** — arranque de sesión (voz, música opcional, taller).
+
 Asistente local inspirado en la **idea** del Jarvis de *Iron Man*: voz que te trata con respeto (“señor”), informe de “sistemas”, música épica opcional y apertura del taller (OpenCode + Cursor). **No es oficial** de Marvel/Disney; es un homenaje para tu flujo de trabajo.
 
 ## Qué hace
