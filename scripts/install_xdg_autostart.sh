@@ -5,7 +5,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DESKTOP_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/autostart"
 DESKTOP_FILE="$DESKTOP_DIR/jarvis-bienvenida.desktop"
-DELAY="${JARVIS_AUTOSTART_INSTALL_DELAY:-15}"
+# Default 0: arranque en cuanto el escritorio lance el autostart. Si DISPLAY/red tardan, usa p.ej. JARVIS_AUTOSTART_INSTALL_DELAY=15
+DELAY="${JARVIS_AUTOSTART_INSTALL_DELAY:-0}"
 
 mkdir -p "$DESKTOP_DIR"
 chmod +x "$ROOT/jarvis" "$ROOT/scripts/jarvis_autostart.sh" 2>/dev/null || true

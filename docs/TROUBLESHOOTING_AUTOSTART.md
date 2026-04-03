@@ -47,10 +47,11 @@
    Si falla, revisa la terminal o `cat ~/.local/share/jarvis-startup/autostart.log`.
 
 6. **Reinicio vs cerrar sesión**  
-   Tras un reinicio completo, a veces la red o el escritorio tardan; el instalador pone `JARVIS_AUTOSTART_DELAY_SEC=15` y `X-GNOME-Autostart-Delay`. Puedes subir el retraso:
+   Por defecto el instalador usa **retraso 0** (Jarvis se lanza en cuanto el autostart corre). Si tras un reinicio completo falla porque el escritorio o la red aún no están listos, **vuelve a generar el `.desktop` con más espera**:
    ```bash
-   JARVIS_AUTOSTART_INSTALL_DELAY=25 ./scripts/install_xdg_autostart.sh
+   JARVIS_AUTOSTART_INSTALL_DELAY=15 ./scripts/install_xdg_autostart.sh
    ```
+   (Valores mayores, p. ej. `25`, solo si lo necesitas.)
 
 7. **Variables que abortan la secuencia**  
    Si exportaste `JARVIS_REQUIRE_NETWORK=1` o `JARVIS_REQUIRE_MONITOR=1` en un sitio global y al login aún no hay red o sesión gráfica lista, Jarvis puede salir sin hacer nada. Revisa el log o prueba sin esas variables en autostart.

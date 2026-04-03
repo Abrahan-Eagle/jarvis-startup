@@ -7,7 +7,7 @@ Comment=Bienvenida por voz y entorno de trabajo (inspiración Iron Man). El proc
 # (genera ~/.config/autostart/jarvis-bienvenida.desktop con tu $HOME real).
 #
 # Ejemplo manual (sustituye la ruta):
-Exec=env JARVIS_AUTOSTART_DELAY_SEC=15 JARVIS_AUTOSTART_LOG=1 /bin/bash /home/TU_USUARIO/jarvis-startup/scripts/jarvis_autostart.sh
+Exec=env JARVIS_AUTOSTART_DELAY_SEC=0 JARVIS_AUTOSTART_LOG=1 /bin/bash /home/TU_USUARIO/jarvis-startup/scripts/jarvis_autostart.sh
 Path=/home/TU_USUARIO/jarvis-startup
 Icon=utilities-terminal
 Terminal=false
@@ -15,4 +15,4 @@ StartupNotify=false
 DBusActivatable=false
 Categories=Utility;
 X-GNOME-Autostart-enabled=true
-X-GNOME-Autostart-Delay=15
+X-GNOME-Autostart-Delay=0

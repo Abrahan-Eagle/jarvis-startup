@@ -80,6 +80,6 @@ Referencia única para `bienvenido_jarvis.py`, `jarvis_lista.py` y [`hud_overlay
 | `JARVIS_TTS_AUTO_LANG` | `1`: elige voz Edge según `LANG` (`JARVIS_TTS_VOICE_EN` / `JARVIS_TTS_VOICE_ES`). |
 | `JARVIS_AUTOSTART_DELAY_SEC` | Entero (segundos): espera antes de ejecutar `./jarvis` cuando se usa [`scripts/jarvis_autostart.sh`](../scripts/jarvis_autostart.sh) (p. ej. autostart). `0` por defecto. |
 | `JARVIS_AUTOSTART_LOG` | `1` (default): escribe salida en `~/.local/share/jarvis-startup/autostart.log` al usar `jarvis_autostart.sh`. `0` desactiva el log. |
-| `JARVIS_AUTOSTART_INSTALL_DELAY` | Solo para [`scripts/install_xdg_autostart.sh`](../scripts/install_xdg_autostart.sh): segundos de retraso escritos en el `.desktop` (default `15`). |
+| `JARVIS_AUTOSTART_INSTALL_DELAY` | Solo para [`scripts/install_xdg_autostart.sh`](../scripts/install_xdg_autostart.sh): segundos de retraso escritos en el `.desktop` (default `0`; sube si tras reinicio Jarvis falla por sesión/red no lista). |
 
 Extensiones en `jarvis_lista.py` y documentos en `docs/` pueden añadir variables; esta tabla cubre el flujo principal.

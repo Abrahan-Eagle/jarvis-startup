@@ -79,7 +79,7 @@ La secuencia principal **no es un demonio**: al terminar voz, música y apertura
 
 Para lanzarlo **al entrar en el escritorio**:
 
-1. **Recomendado:** ejecuta una vez [`scripts/install_xdg_autostart.sh`](scripts/install_xdg_autostart.sh) — genera `~/.config/autostart/jarvis-bienvenida.desktop` con **rutas absolutas** (evita el fallo típico de dejar `TU_USUARIO` en el ejemplo).
+1. **Recomendado:** ejecuta una vez [`scripts/install_xdg_autostart.sh`](scripts/install_xdg_autostart.sh) — genera `~/.config/autostart/jarvis-bienvenida.desktop` con **rutas absolutas** (evita el fallo típico de dejar `TU_USUARIO` en el ejemplo). Por defecto **retraso 0 s** al iniciar sesión (lanza en cuanto el escritorio ejecuta el autostart); si ya tenías un `.desktop` antiguo con 15 s, **vuelve a ejecutar el instalador** para actualizarlo.
 2. Manual: copia [`contrib/jarvis.desktop.example`](contrib/jarvis.desktop.example) a `~/.config/autostart/`, sustituye **todas** las rutas por las tuyas y `chmod +x jarvis scripts/jarvis_autostart.sh`.
 3. [`scripts/jarvis_autostart.sh`](scripts/jarvis_autostart.sh): retraso `JARVIS_AUTOSTART_DELAY_SEC`, log en `~/.local/share/jarvis-startup/autostart.log` (`JARVIS_AUTOSTART_LOG=0` para desactivar).
 4. Alternativa **systemd --user**: [`contrib/jarvis-user.service.example`](contrib/jarvis-user.service.example).
