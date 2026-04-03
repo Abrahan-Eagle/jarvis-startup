@@ -8,7 +8,12 @@ Dependencias:
     pip install edge-tts pygame psutil requests
 
 Uso:
-    python bienvenido_jarvis.py [--version] [--dry-run]
+    python bienvenido_jarvis.py [--dry-run]
+    python bienvenido_jarvis.py run [--dry-run]
+    python bienvenido_jarvis.py doctor
+    python bienvenido_jarvis.py version
+    python bienvenido_jarvis.py --doctor
+    Variables: env > ~/.config/jarvis-startup/config.json > perfil en código (ver jarvis_config.py).
 """
 
 from __future__ import annotations
@@ -16,11 +21,7 @@ from __future__ import annotations
 import json
 import sys
 
-__version__ = "2.2.0"
-
-if __name__ == "__main__" and "--version" in sys.argv:
-    print(f"jarvis-bienvenida {__version__}")
-    raise SystemExit(0)
+__version__ = "2.3.0"
 
 import argparse
 import asyncio
@@ -52,8 +53,16 @@ try:
 except ImportError:
     jarvis_lista = None  # type: ignore[misc, assignment]
 
+try:
+    from jarvis_config import load_user_config
+except ImportError:
+
+    def load_user_config() -> dict:  # type: ignore[misc]
+        return {}
+
+
 # ──────────────────────────────────────────────────────────────────────────────
-# Perfiles (JARVIS_PROFILE): defaults por “contexto”; TITULO / NEW_PROJECT en env tienen prioridad
+# Perfiles (JARVIS_PROFILE): defaults por “contexto”; env > ~/.config/.../config.json > PROFILES
 # ──────────────────────────────────────────────────────────────────────────────
 PROFILES: dict[str, dict[str, str]] = {
     "default": {
@@ -70,21 +79,42 @@ PROFILES: dict[str, dict[str, str]] = {
     },
 }
 
-
-def _profile_defaults() -> dict[str, str]:
-    name = os.getenv("JARVIS_PROFILE", "default").strip().lower()
-    base = PROFILES.get(name, PROFILES["default"]).copy()
-    return base
+_USER_CONFIG = load_user_config()
 
 
-_pd = _profile_defaults()
-TITULO = os.getenv("JARVIS_TITULO", _pd.get("titulo", "señor"))
-NEW_PROJECT = os.path.expanduser(os.getenv("JARVIS_NEW_PROJECT", _pd.get("project", "~/Desktop/nuevo_proyecto")))
+def _profile_name() -> str:
+    ev = os.getenv("JARVIS_PROFILE", "").strip().lower()
+    if ev:
+        return ev
+    fv = _USER_CONFIG.get("profile")
+    if isinstance(fv, str) and fv.strip():
+        return fv.strip().lower()
+    return "default"
 
-MUSIC_FILE = os.path.expanduser(
-    os.getenv("JARVIS_MUSIC_FILE", "~/jarvis-startup/iron_music.mp3").strip()
-    or "~/jarvis-startup/iron_music.mp3"
-)
+
+_pd = PROFILES.get(_profile_name(), PROFILES["default"]).copy()
+
+
+def _pick_setting(env_key: str, file_key: str, profile_val: str, default: str) -> str:
+    ev = os.getenv(env_key, "").strip()
+    if ev:
+        return ev
+    fv = _USER_CONFIG.get(file_key)
+    if isinstance(fv, str) and fv.strip():
+        return fv.strip()
+    if profile_val:
+        return profile_val
+    return default
+
+
+_TIT_DEFAULT = _pd.get("titulo", "señor")
+_PROJ_DEFAULT = _pd.get("project", "~/Desktop/nuevo_proyecto")
+TITULO = _pick_setting("JARVIS_TITULO", "titulo", _TIT_DEFAULT, "señor")
+NEW_PROJECT = os.path.expanduser(_pick_setting("JARVIS_NEW_PROJECT", "project", _PROJ_DEFAULT, "~/Desktop/nuevo_proyecto"))
+
+_MF_FALLBACK = "~/jarvis-startup/iron_music.mp3"
+_mf_raw = _pick_setting("JARVIS_MUSIC_FILE", "music_file", "", "")
+MUSIC_FILE = os.path.expanduser((_mf_raw or _MF_FALLBACK).strip() or _MF_FALLBACK)
 
 # Chime opcional estilo HUD (.wav / .ogg); canales distintos al de la voz TTS
 BOOT_SOUND_RAW = os.getenv("JARVIS_BOOT_SOUND", "").strip()
@@ -96,7 +126,7 @@ SKIP_NETWORK = os.getenv("JARVIS_SKIP_NETWORK", "").strip().lower() in ("1", "tr
 
 # iron: tono mayordomo / IA estilo película (español, sin copiar diálogos literales)
 # minimal: frases más cortas
-JARVIS_THEME = os.getenv("JARVIS_THEME", "iron").strip().lower()
+JARVIS_THEME = _pick_setting("JARVIS_THEME", "theme", "iron", "iron").strip().lower()
 
 JARVIS_TTS_VOICE = os.getenv("JARVIS_TTS_VOICE", "es-ES-AlvaroNeural").strip()
 JARVIS_TTS_RATE = os.getenv("JARVIS_TTS_RATE", "+0%").strip()
@@ -1065,18 +1095,78 @@ def main(dry_run: bool = False) -> None:
         raise
 
 
-def _parse_args() -> argparse.Namespace:
+def _parse_args(argv: list[str] | None = None) -> tuple[str, argparse.Namespace]:
+    """
+    Devuelve (comando, namespace). Comandos: run, doctor, version.
+    Compatibilidad: sin subcomando se interpreta como run (--dry-run, --doctor, --version).
+    """
+    raw = list(argv if argv is not None else sys.argv[1:])
+    if not raw:
+        ns = argparse.Namespace(dry_run=False)
+        return ("run", ns)
+
+    if raw[0] == "doctor":
+        p = argparse.ArgumentParser(
+            prog="jarvis-bienvenida doctor",
+            description="Comprueba dependencias y herramientas opcionales.",
+        )
+        p.parse_args(raw[1:])
+        return ("doctor", argparse.Namespace())
+
+    if raw[0] == "version":
+        return ("version", argparse.Namespace())
+
+    if raw[0] == "run":
+        p = argparse.ArgumentParser(
+            prog="jarvis-bienvenida run",
+            description="Secuencia de bienvenida (por defecto si no indicas subcomando).",
+        )
+        p.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="Simula la secuencia sin TTS, música, chime ni abrir aplicaciones",
+        )
+        ns = p.parse_args(raw[1:])
+        return ("run", ns)
+
     p = argparse.ArgumentParser(
-        description="Jarvis: bienvenida por voz y entorno de trabajo (inspiración Iron Man, no oficial)."
+        description="Jarvis: bienvenida por voz y entorno de trabajo (inspiración Iron Man, no oficial). "
+        "Subcomandos: run, doctor, version. Sin subcomando: mismo comportamiento que run.",
     )
     p.add_argument(
         "--dry-run",
         action="store_true",
         help="Simula la secuencia sin TTS, música, chime ni abrir aplicaciones",
     )
-    return p.parse_args()
+    p.add_argument(
+        "--doctor",
+        action="store_true",
+        help="Diagnóstico de entorno (equivalente al subcomando doctor)",
+    )
+    p.add_argument(
+        "--version",
+        action="version",
+        version=f"jarvis-bienvenida {__version__}",
+    )
+    ns = p.parse_args(raw)
+    if ns.doctor:
+        return ("doctor", argparse.Namespace())
+    return ("run", ns)
+
+
+def main_cli(argv: list[str] | None = None) -> None:
+    cmd, ns = _parse_args(argv)
+    if cmd == "version":
+        print(f"jarvis-bienvenida {__version__}")
+        raise SystemExit(0)
+    if cmd == "doctor":
+        import jarvis_doctor
+
+        code = jarvis_doctor.run_doctor_cli(music_file=MUSIC_FILE)
+        raise SystemExit(code)
+    dry = bool(getattr(ns, "dry_run", False))
+    main(dry_run=dry)
 
 
 if __name__ == "__main__":
-    _args = _parse_args()
-    main(dry_run=_args.dry_run)
+    main_cli()

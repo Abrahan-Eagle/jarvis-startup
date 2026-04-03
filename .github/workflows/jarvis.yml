@@ -18,9 +18,11 @@ jobs:
         run: pip install -r requirements.txt
       - name: Syntax
         run: |
-          python -m py_compile bienvenido_jarvis.py jarvis_lista.py hud_overlay.py
+          python -m py_compile bienvenido_jarvis.py jarvis_lista.py jarvis_doctor.py jarvis_config.py hud_overlay.py
           python -m py_compile scripts/jarvis_confirm.py
-      - name: Unit tests (jarvis_lista)
+      - name: Unit tests
         run: python -m unittest discover -s tests -v
+      - name: Doctor (sin comprobar red externa)
+        run: JARVIS_DOCTOR_SKIP_NETWORK=1 python bienvenido_jarvis.py doctor
       - name: Dry-run
         run: python bienvenido_jarvis.py --dry-run

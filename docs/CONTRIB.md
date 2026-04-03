@@ -4,6 +4,7 @@
 - **Autostart XDG:** [`contrib/jarvis.desktop.example`](../contrib/jarvis.desktop.example) → `~/.config/autostart/`.
 - **systemd --user:** [`contrib/jarvis-user.service.example`](../contrib/jarvis-user.service.example) (ajustar rutas).
 - **Variables:** [`ENV.md`](ENV.md).
+- **Config JSON:** `~/.config/jarvis-startup/config.json` — `titulo`, `project`, `theme`, `music_file`, `profile` (ver README); precedencia por encima del perfil embebido y por debajo del entorno.
 - **Pruebas:** `python -m unittest discover -s tests -v` desde la raíz del repo.
 - **CI:** [`.github/workflows/jarvis.yml`](../.github/workflows/jarvis.yml).
 

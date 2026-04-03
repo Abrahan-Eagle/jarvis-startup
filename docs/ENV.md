@@ -4,6 +4,9 @@ Referencia única para `bienvenido_jarvis.py`, `jarvis_lista.py` y [`hud_overlay
 
 | Variable | Descripción |
 |----------|-------------|
+| *(archivo)* | Opcional: `~/.config/jarvis-startup/config.json` con claves `titulo`, `project`, `theme`, `music_file`, `profile`. Prioridad: **env > config.json > perfil en código**. |
+| `JARVIS_CONFIG_STRICT` | `1`: avisa en stderr por JSON inválido o claves desconocidas en `config.json`. |
+| `JARVIS_DOCTOR_SKIP_NETWORK` | `1`: en `jarvis doctor` no intenta TCP a 1.1.1.1:443 (útil en CI o sin salida a Internet). |
 | `JARVIS_PROFILE` | `default`, `taller`, `casa` — ajusta defaults de título y carpeta (si no sobreescribes `JARVIS_TITULO` / `JARVIS_NEW_PROJECT`). |
 | `JARVIS_THEME` | `iron` (por defecto) o `minimal`. |
 | `JARVIS_TITULO` | Cómo te nombra la voz (ej. tu apellido o “señor”). |

@@ -44,10 +44,32 @@ Opcionales: `wmctrl`, `notify-send` (paquete `libnotify`), `xrandr`, `espeak-ng`
 ./jarvis
 # Simular sin voz, música ni abrir apps (útil para pruebas)
 ./jarvis --dry-run
-# o
+# Subcomandos (equivalente a invocar sin subcomando = `run`)
+./jarvis run --dry-run
+./jarvis doctor          # comprueba Python, pip, binarios opcionales, red (opcional)
+./jarvis version
+# Forma explícita
 python bienvenido_jarvis.py
 python bienvenido_jarvis.py --version
 ```
+
+En CI o sin red, `JARVIS_DOCTOR_SKIP_NETWORK=1 ./jarvis doctor` evita comprobar TCP a 1.1.1.1.
+
+## Configuración en archivo (opcional)
+
+Precedencia: **variables de entorno** > **`~/.config/jarvis-startup/config.json`** > perfil en código (`default` / `taller` / `casa`).
+
+Claves admitidas en JSON: `titulo`, `project`, `theme`, `music_file`, `profile`. Ejemplo:
+
+```json
+{
+  "profile": "casa",
+  "titulo": "señor",
+  "project": "~/Documentos/mi_repo"
+}
+```
+
+Con `JARVIS_CONFIG_STRICT=1`, claves desconocidas en el JSON generan aviso en stderr.
 
 Roadmap priorizado estilo película: [`docs/ROADMAP_PELICULA.md`](docs/ROADMAP_PELICULA.md).
 
@@ -59,4 +81,4 @@ Tabla canónica: **[docs/ENV.md](docs/ENV.md)** (incluye HUD, lista extendida, s
 
 ## Versión
 
-Actual **2.1.0** en `bienvenido_jarvis.py` (`__version__`); ver con `--version`. Cobertura de la lista 1–100: [docs/COBERTURA_IDEAS.md](docs/COBERTURA_IDEAS.md).
+Actual **2.3.0** en `bienvenido_jarvis.py` (`__version__`); ver con `jarvis version` o `--version`. Cobertura de la lista 1–100: [docs/COBERTURA_IDEAS.md](docs/COBERTURA_IDEAS.md).
