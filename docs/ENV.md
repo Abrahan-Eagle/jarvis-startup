@@ -20,7 +20,10 @@ Referencia única para `bienvenido_jarvis.py`, `jarvis_lista.py` y [`hud_overlay
 | `JARVIS_TTS_VOICE` | Voz Edge (ej. `es-ES-AlvaroNeural`, `es-ES-ElviraNeural`). |
 | `JARVIS_TTS_RATE` | Velocidad TTS, ej. `+10%` o `-5%`. |
 | `JARVIS_MUSIC_VOLUME` | Volumen MP3 0.0–1.0 (por defecto `1.0`, ~3× el nivel histórico `0.4375`; pygame no admite >1.0). |
-| `JARVIS_SKIP_NETWORK` | `1` / `true`: no consulta wttr.in. |
+| `JARVIS_SKIP_NETWORK` | `1` / `true`: no consulta wttr.in (primer TTS más rápido si la red va lenta). |
+| `JARVIS_WEATHER_TIMEOUT_SEC` | Segundos máx. por petición a wttr.in (default `2`). |
+| `JARVIS_WEATHER_TOTAL_WAIT_SEC` | Segundos máx. esperando el hilo del clima junto al muestreo de CPU (default `5`). |
+| `JARVIS_CPU_SAMPLE_INTERVAL` | Segundos de `psutil.cpu_percent` (default `0.1`; antes el saludo usaba `0.5` en bloque). |
 | `JARVIS_NO_NOTIFY` | `1` / `true`: no usa `notify-send`. |
 | `JARVIS_DELAY_OPENCODE` | Segundos tras abrir terminal OpenCode (default `1.2`). |
 | `JARVIS_DELAY_CURSOR` | Segundos tras Cursor (default `1.2`). |

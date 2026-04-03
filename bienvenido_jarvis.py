@@ -21,10 +21,11 @@ from __future__ import annotations
 import json
 import sys
 
-__version__ = "2.3.3"
+__version__ = "2.3.4"
 
 import argparse
 import asyncio
+import concurrent.futures
 import datetime
 import locale as _locale_mod
 import os
@@ -481,14 +482,17 @@ def reproducir_chime_ide_opcional() -> None:
 def obtener_clima() -> str:
     if SKIP_NETWORK or PRIVACY_MODE:
         return ""
-    for intento in range(2):
-        try:
-            r = requests.get("https://wttr.in/?lang=es&format=%t+con+cielo+%C", timeout=4)
-            if r.status_code == 200:
-                return " La temperatura externa es de " + r.text.replace("+", " ") + "."
-        except requests.RequestException:
-            if intento == 0:
-                time.sleep(0.4)
+    # Una sola petición; timeout acotado para no bloquear el inicio del TTS.
+    to = max(1, _env_int("JARVIS_WEATHER_TIMEOUT_SEC", 2))
+    try:
+        r = requests.get(
+            "https://wttr.in/?lang=es&format=%t+con+cielo+%C",
+            timeout=to,
+        )
+        if r.status_code == 200:
+            return " La temperatura externa es de " + r.text.replace("+", " ") + "."
+    except requests.RequestException:
+        pass
     return ""
 
 
@@ -517,16 +521,27 @@ def obtener_saludo_dinamico(dry_run: bool = False) -> tuple[str, str]:
     ahora = datetime.datetime.now()
     hora = ahora.hour
     hora_actual = ahora.strftime("%H:%M")
-    clima_str = "" if dry_run else obtener_clima()
+    # Clima (red) y muestreo de CPU en paralelo para acortar el tiempo hasta el primer TTS.
+    clima_str = ""
+    need_clima = not dry_run and not SKIP_NETWORK and not PRIVACY_MODE
+    _cpu_iv = float(os.getenv("JARVIS_CPU_SAMPLE_INTERVAL", "0.1"))
+    _cpu_iv = max(0.05, min(2.0, _cpu_iv))
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+        fut_clima = pool.submit(obtener_clima) if need_clima else None
+        cpu_p = int(psutil.cpu_percent(interval=_cpu_iv))
+        mem_p = int(psutil.virtual_memory().percent)
+        if fut_clima is not None:
+            try:
+                wait_max = max(2, _env_int("JARVIS_WEATHER_TOTAL_WAIT_SEC", 5))
+                clima_str = fut_clima.result(timeout=wait_max)
+            except (concurrent.futures.TimeoutError, Exception):
+                clima_str = ""
     bat_str = _texto_bateria()
     host_str = ""
     if USE_HOSTNAME and not PRIVACY_MODE:
         hn = _hostname_corto()
         if hn:
             host_str = f" Unidad «{hn}»."
-
-    cpu_p = int(psutil.cpu_percent(interval=0.5))
-    mem_p = int(psutil.virtual_memory().percent)
 
     if PRIVACY_MODE:
         if JARVIS_THEME == "minimal":
