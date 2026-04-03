@@ -1,6 +1,6 @@
 # Ideas coherentes con Jarvis en las películas *Iron Man* / MCU
 
-Referencia creativa para el proyecto local (`~/jarvis`). **No** es copia de guiones ni de Marvel; es el *tipo* de cosas que el asistente hace en pantalla: mayordomo técnico, diagnósticos, ritual del laboratorio, capas de “sistemas”. Muchas son viables en Linux con scripts; otras son aspiracionales (IA, hardware dedicado).
+Referencia creativa para el proyecto local (`~/jarvis-startup`). **No** es copia de guiones ni de Marvel; es el *tipo* de cosas que el asistente hace en pantalla: mayordomo técnico, diagnósticos, ritual del laboratorio, capas de “sistemas”. Muchas son viables en Linux con scripts; otras son aspiracionales (IA, hardware dedicado).
 
 **Alcance:** exactamente **100** ideas numeradas (1–100); el resto se prioriza en sprints aparte.
 
@@ -83,7 +83,7 @@ Referencia creativa para el proyecto local (`~/jarvis`). **No** es copia de guio
 56. Detectar `Makefile`/`justfile` y sugerir objetivo por defecto — `M`
 57. Lanzar tests con un comando configurable y leer solo código de salida — `M`
 58. Abrir documentación local (`README.md`) en visor — `L`
-59. Plantilla de “briefing” del proyecto en `~/jarvis/briefing.md` leído en voz — `L`
+59. Plantilla de “briefing” del proyecto en `~/jarvis-startup/briefing.md` leído en voz — `L`
 60. Segundo proyecto en ventana (split) si variable `JARVIS_SECOND_PATH` — `M`
 
 ## Ventanas, escritorio y sesión
@@ -143,7 +143,7 @@ Referencia creativa para el proyecto local (`~/jarvis`). **No** es copia de guio
 
 ## Comunidad y extensión
 
-92. Plugins: carpeta `~/.config/jarvis/hooks.d/` con scripts ejecutados en orden — `M`
+92. Plugins: carpeta `~/.config/jarvis-startup/hooks.d/` con scripts ejecutados en orden — `M`
 93. Variables de entorno documentadas en un solo `ENV.md` — `L`
 94. Plantilla de contribución para nuevos “protocolos” — `L`
 
@@ -163,7 +163,7 @@ Referencia creativa para el proyecto local (`~/jarvis`). **No** es copia de guio
 
 ## Cobertura v2.0 (implementación agregada)
 
-No hay un archivo por idea: el conjunto **1–100** queda cubierto por `bienvenido_jarvis.py` + `jarvis_lista.py` + `hud_overlay.py`, variables en [`ENV.md`](ENV.md), anexos de saludo con `JARVIS_LISTA_COMPLETA`, hooks (`run_hooks` → `~/.config/jarvis/hooks.d/`), informe de sesión, CI (`.github/workflows/jarvis.yml`), tests (`tests/`), `install.sh`, [`scripts/jarvis_confirm.py`](../scripts/jarvis_confirm.py), y ejemplos en `contrib/`. Las ideas marcadas `H` o dependientes de hardware ajeno siguen siendo aspiracionales.
+No hay un archivo por idea: el conjunto **1–100** queda cubierto por `bienvenido_jarvis.py` + `jarvis_lista.py` + `hud_overlay.py`, variables en [`ENV.md`](ENV.md), anexos de saludo con `JARVIS_LISTA_COMPLETA`, hooks (`run_hooks` → `~/.config/jarvis-startup/hooks.d/`), informe de sesión, CI (`.github/workflows/jarvis.yml`), tests (`tests/`), `install.sh`, [`scripts/jarvis_confirm.py`](../scripts/jarvis_confirm.py), y ejemplos en `contrib/`. Las ideas marcadas `H` o dependientes de hardware ajeno siguen siendo aspiracionales.
 
 ---
 

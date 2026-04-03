@@ -1,4 +1,4 @@
-# Roadmap estilo Iron Man — Jarvis local (`~/jarvis`)
+# Roadmap estilo Iron Man — Jarvis local (`~/jarvis-startup`)
 
 Priorización de **10 mejoras** alineadas con la película (mayordomo, diagnósticos, ritual del taller). Esfuerzo: **S** = pocas horas, **M** = 1–2 días, **L** = varios días o depende del entorno.
 
@@ -7,7 +7,7 @@ Todas son **solo este repo** (sin Zonix Eats).
 | # | Mejora | Esfuerzo | Idea origen (lista 50) | Estado |
 |---|--------|----------|-------------------------|--------|
 | 1 | **`--dry-run` + `JARVIS_DRY_RUN`** — simular secuencia sin TTS, audio ni apps | **S** | 39 | ✅ v1.3.0 |
-| 2 | **Log `~/.local/share/jarvis/last_run.json`** — timestamp, versión, modo dry | **S** | 38 | ✅ v1.3.0 |
+| 2 | **Log `~/.local/share/jarvis-startup/last_run.json`** — timestamp, versión, modo dry | **S** | 38 | ✅ v1.3.0 |
 | 3 | **Diagnóstico “reactor”** — batería vía sysfs si hay `BAT*` | **S** | 6 | ✅ v1.3.0 (`JARVIS_USE_BATTERY`) |
 | 4 | **Unidad / hostname** en el saludo (opcional, env) | **S** | 28 | ✅ v1.3.0 (`JARVIS_USE_HOSTNAME`) |
 | 5 | **Chime por fase** — segundo sonido al abrir IDE (env separado) | **M** | 13 | ✅ v1.4.0 (`JARVIS_IDE_CHIME`) |

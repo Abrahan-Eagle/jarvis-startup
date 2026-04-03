@@ -2,7 +2,7 @@
 Type=Application
 Name=Jarvis Bienvenida
 Comment=Bienvenida por voz y entorno de trabajo (inspiración Iron Man)
-Exec=/home/TU_USUARIO/jarvis/jarvis
+Exec=/home/TU_USUARIO/jarvis-startup/jarvis
 Icon=utilities-terminal
 Terminal=false
 Categories=Utility;

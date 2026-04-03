@@ -14,10 +14,10 @@ After=graphical-session.target
 
 [Service]
 Type=oneshot
-WorkingDirectory=%h/jarvis
-Environment=PATH=%h/jarvis/venv/bin:/usr/local/bin:/usr/bin
+WorkingDirectory=%h/jarvis-startup
+Environment=PATH=%h/jarvis-startup/venv/bin:/usr/local/bin:/usr/bin
 Environment=JARVIS_REQUIRE_MONITOR=1
-ExecStart=%h/jarvis/jarvis
+ExecStart=%h/jarvis-startup/jarvis
 RemainAfterExit=yes
 
 [Install]

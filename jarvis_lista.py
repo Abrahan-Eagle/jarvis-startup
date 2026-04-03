@@ -24,6 +24,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+# Directorio de datos de aplicación (alineado con el nombre del repo: jarvis-startup)
+XDG_APP_DIR = "jarvis-startup"
+
 # ── Idea 70: niveles Mark (1–7) afectan volumen musical sugerido (el caller aplica) ──
 
 
@@ -340,7 +343,7 @@ def _birthday_msg() -> str:
 
 
 def _streak_update() -> str:
-    path = Path.home() / ".local/share/jarvis/streak.json"
+    path = Path.home() / ".local/share" / XDG_APP_DIR / "streak.json"
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         data: dict[str, Any] = {}
@@ -512,10 +515,10 @@ def build_saludo_annex(
 
 
 def run_hooks(dry_run: bool) -> None:
-    """Idea 92: ejecuta scripts en ~/.config/jarvis/hooks.d/"""
+    """Idea 92: ejecuta scripts en ~/.config/jarvis-startup/hooks.d/"""
     if dry_run:
         return
-    d = Path.home() / ".config/jarvis/hooks.d"
+    d = Path.home() / ".config" / XDG_APP_DIR / "hooks.d"
     if not d.is_dir():
         return
     for script in sorted(d.glob("*.sh")):
@@ -527,7 +530,7 @@ def run_hooks(dry_run: bool) -> None:
 
 def write_session_report(extra: dict[str, Any]) -> None:
     """Ideas 83–85: informe TXT + JSON enriquecido."""
-    base = Path.home() / ".local/share/jarvis"
+    base = Path.home() / ".local/share" / XDG_APP_DIR
     try:
         base.mkdir(parents=True, exist_ok=True)
         p = base / "session_report.txt"

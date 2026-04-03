@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 import sys
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 if __name__ == "__main__" and "--version" in sys.argv:
     print(f"jarvis-bienvenida {__version__}")
@@ -55,7 +55,7 @@ PROFILES: dict[str, dict[str, str]] = {
     },
     "casa": {
         "titulo": "señor",
-        "project": "~/Documentos/jarvis",
+        "project": "~/Documentos/jarvis-startup",
     },
 }
 
@@ -71,7 +71,8 @@ TITULO = os.getenv("JARVIS_TITULO", _pd.get("titulo", "señor"))
 NEW_PROJECT = os.path.expanduser(os.getenv("JARVIS_NEW_PROJECT", _pd.get("project", "~/Desktop/nuevo_proyecto")))
 
 MUSIC_FILE = os.path.expanduser(
-    os.getenv("JARVIS_MUSIC_FILE", "~/jarvis/iron_music.mp3").strip() or "~/jarvis/iron_music.mp3"
+    os.getenv("JARVIS_MUSIC_FILE", "~/jarvis-startup/iron_music.mp3").strip()
+    or "~/jarvis-startup/iron_music.mp3"
 )
 
 # Chime opcional estilo HUD (.wav / .ogg); canales distintos al de la voz TTS
@@ -121,7 +122,7 @@ USE_BATTERY = os.getenv("JARVIS_USE_BATTERY", "1").strip().lower() not in (
 )
 
 # Log de última ejecución
-LAST_RUN_PATH = os.path.expanduser("~/.local/share/jarvis/last_run.json")
+LAST_RUN_PATH = os.path.expanduser("~/.local/share/jarvis-startup/last_run.json")
 SKIP_LAST_RUN_LOG = os.getenv("JARVIS_SKIP_LAST_RUN_LOG", "").strip().lower() in (
     "1",
     "true",

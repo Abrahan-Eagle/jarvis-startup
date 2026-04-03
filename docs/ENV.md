@@ -8,7 +8,7 @@ Referencia única para `bienvenido_jarvis.py`, `jarvis_lista.py` y [`hud_overlay
 | `JARVIS_THEME` | `iron` (por defecto) o `minimal`. |
 | `JARVIS_TITULO` | Cómo te nombra la voz (ej. tu apellido o “señor”). |
 | `JARVIS_NEW_PROJECT` | Carpeta que abre Cursor. |
-| `JARVIS_MUSIC_FILE` | Ruta al MP3 de fondo (por defecto `~/jarvis/iron_music.mp3`). |
+| `JARVIS_MUSIC_FILE` | Ruta al MP3 de fondo (por defecto `~/jarvis-startup/iron_music.mp3`). |
 | `JARVIS_BOOT_SOUND` | Ruta opcional a `.wav` / `.ogg` corto, chime al inicio (estilo HUD); se reproduce en **dos canales** a volumen máximo para ganar ~+6 dB respecto a un solo canal. |
 | `JARVIS_IDE_CHIME` | Ruta opcional a `.wav` / `.ogg` corto, tras abrir Cursor (antes de `wmctrl`). |
 | `JARVIS_PRIVACY_MODE` | `1` / `true`: sin clima/red en saludo, sin hostname ni batería; frases más cortas (p. ej. pantalla compartida). |
@@ -26,7 +26,7 @@ Referencia única para `bienvenido_jarvis.py`, `jarvis_lista.py` y [`hud_overlay
 | `JARVIS_DRY_RUN` | `1` / `true`: mismo efecto que `--dry-run` (sin TTS, música, chime ni lanzar apps). |
 | `JARVIS_USE_HOSTNAME` | Por defecto activo: añade «Unidad «hostname»» al saludo. `0` / `false` para omitir. |
 | `JARVIS_USE_BATTERY` | Por defecto activo: si hay batería (`BAT*`), añade línea «Energía del reactor al X%». En torre suele no mostrar nada. |
-| `JARVIS_SKIP_LAST_RUN_LOG` | `1` / `true`: no escribe `~/.local/share/jarvis/last_run.json`. |
+| `JARVIS_SKIP_LAST_RUN_LOG` | `1` / `true`: no escribe `~/.local/share/jarvis-startup/last_run.json`. |
 | `JARVIS_HUD` | `1` / `true`: al terminar la secuencia abre `hud_overlay.py` en ventana independiente (no en `--dry-run`). |
 | `JARVIS_HUD_REFRESH_MS` | Intervalo de actualización del HUD (ms), por defecto `1500`. |
 | `JARVIS_HUD_DURATION_SEC` | Si `>0`, cierra el HUD automáticamente tras esos segundos; `0` = hasta cerrar la ventana. |
